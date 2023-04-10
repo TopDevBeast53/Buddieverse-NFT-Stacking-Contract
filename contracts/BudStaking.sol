@@ -255,7 +255,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 totalRewards = getTotalStakedRewards();
         if (totalRewards >= 2400000) {
             return rewardsPerHour / 8;
-        else if (totalRewards >= 1800000) {
+        } else if (totalRewards >= 1800000) {
             return rewardsPerHour / 4;
         } else if (totalRewards >= 1000000) {
             return rewardsPerHour / 2;

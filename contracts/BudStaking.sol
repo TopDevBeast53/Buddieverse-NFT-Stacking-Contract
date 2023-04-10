@@ -228,8 +228,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      * @dev This includes both the rewards stored but not claimed and the rewards accumulated since the last update.
      */
     function availableRewards(address _user) internal view returns (uint256 _rewards) {
-        Staker memory staker = stakers[_user];
-
         _rewards = getRewards(_user);
 
         uint256 totalRewards = getTotalStakedRewards();

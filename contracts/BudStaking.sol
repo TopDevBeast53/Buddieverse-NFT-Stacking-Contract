@@ -35,7 +35,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_HOUR = 3600;
 
-    uint256 constant MAXIMUN_STAKING_REWARDS = 3000000;
+    uint256 constant MAX_STAKING_REWARDS = 3000000;
 
     /**
      * @dev Struct that holds the staking details for each user.
@@ -110,6 +110,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
     function stake(uint256[] calldata _tokenIds) external whenNotPaused {
+        require(getTotalStakedRewards() < MAX_STAKING_REWARDS, "Maximum staked rewards overflow");
+
         Staker storage staker = stakers[msg.sender];
 
         if (staker.stakedTokenIds.length > 0) {
@@ -178,13 +180,13 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     function claimRewards() external {
         Staker storage staker = stakers[msg.sender];
 
-        uint256 rewards = calculateRewards(msg.sender) + staker.unclaimedRewards;
+        uint256 rewards = availableRewards(msg.sender);
         require(rewards > 0, "You have no rewards to claim");
+
+        rewardsToken.safeTransfer(msg.sender, rewards);
 
         staker.timeOfLastUpdate = block.timestamp;
         staker.unclaimedRewards = 0;
-
-        rewardsToken.safeTransfer(msg.sender, rewards);
     }
 
     /**
@@ -228,11 +230,44 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     function availableRewards(address _user) internal view returns (uint256 _rewards) {
         Staker memory staker = stakers[_user];
 
+        _rewards = getRewards(_user);
+
+        uint256 totalRewards = getTotalStakedRewards();
+        if (totalRewards >= MAX_STAKING_REWARDS) {
+            uint256 totalRewardRates = 0;
+            for (uint256 i; i < stakersArray.length; ++i) {
+                address user = stakersArray[i];
+                totalRewardRates += getStakerRewardRates(user);
+            }
+
+            uint256 stakerRewardRates = getStakerRewardRates(_user);
+
+            uint256 overflow = totalRewards - MAX_STAKING_REWARDS;
+            _rewards -= (overflow * stakerRewardRates) / totalRewardRates;
+        }
+    }
+
+    function getRewards(address _user) internal view returns (uint256 _rewards) {
+        Staker memory staker = stakers[_user];
+
         if (staker.stakedTokenIds.length == 0) {
             return staker.unclaimedRewards;
         }
 
         _rewards = staker.unclaimedRewards + calculateRewards(_user);
+    }
+
+    function getStakerRewardRates(address _user) internal view returns (uint256 _rewardRates) {
+        Staker memory staker = stakers[_user];
+
+        if (staker.stakedTokenIds.length == 0) {
+            return 0;
+        }
+
+        _rewardRates = 0;
+        for (uint256 i; i < staker.stakedTokenIds.length; ++i) {
+            _rewardRates += staker.rewardRates[i];
+        }
     }
 
     /**
@@ -242,7 +277,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 rewards = 0;
         for (uint256 i; i < stakersArray.length; ++i) {
             address staker = stakersArray[i];
-            rewards += availableRewards(staker);
+            rewards += getRewards(staker);
         }
         return alreadyClaimedRewards + rewards;
     }
@@ -253,13 +288,17 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function calculateRewardRate() internal view returns (uint256) {
         uint256 totalRewards = getTotalStakedRewards();
-        if (totalRewards >= 2400000) {
+
+        if (totalRewards >= MAX_STAKING_REWARDS) {
+            return 0;
+        } else if (totalRewards >= 2400000) {
             return rewardsPerHour / 8;
         } else if (totalRewards >= 1800000) {
             return rewardsPerHour / 4;
         } else if (totalRewards >= 1000000) {
             return rewardsPerHour / 2;
         }
+
         return rewardsPerHour;
     }
 

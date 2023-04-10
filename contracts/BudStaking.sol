@@ -46,6 +46,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
          */
         uint256[] stakedTokenIds;
         /**
+         * @dev The rate of rewards for each tokens.
+         */
+        uint256[] rewardRates;
+        /**
          * @dev The time of the last update of the rewards.
          */
         uint256 timeOfLastUpdate;
@@ -118,6 +122,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             nftCollection.transferFrom(msg.sender, address(this), _tokenIds[i]);
 
             staker.stakedTokenIds.push(_tokenIds[i]);
+            staker.rewardRates.push(1); //TODO
             tokenIdToArrayIndex[_tokenIds[i]] = staker.stakedTokenIds.length - 1;
             stakerAddress[_tokenIds[i]] = msg.sender;
         }
@@ -227,12 +232,14 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      * @notice Function used to calculate the rewards for a user.
      * @return _rewards - The rewards for the user.
      */
-    function calculateRewards(address _staker) internal view returns (uint256 _rewards) {
+    function calculateRewards(address _staker) internal view returns (uint256) {
         Staker memory staker = stakers[_staker];
-        return (
-            ((((block.timestamp - staker.timeOfLastUpdate) * staker.stakedTokenIds.length)) * rewardsPerHour)
-                / SECONDS_IN_HOUR
-        );
+        uint256 rewards = 0;
+        for (uint256 i; i < staker.stakedTokenIds.length; ++i) {
+            uint256 rewardRate = staker.rewardRates[i];
+            rewards += (block.timestamp - staker.timeOfLastUpdate) * rewardRate / SECONDS_IN_HOUR;
+        }
+        return rewards;
     }
 
     /**

@@ -35,6 +35,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_HOUR = 3600;
 
+    uint256 constant MAXIMUN_STAKING_REWARDS = 3000000;
+
     /**
      * @dev Struct that holds the staking details for each user.
      */

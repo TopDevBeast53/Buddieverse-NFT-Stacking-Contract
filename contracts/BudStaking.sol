@@ -65,6 +65,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     uint256 private rewardsPerHour = 100000;
 
     /**
+     * @dev The amount of rewards already claimed
+     */
+    uint256 private alreadyClaimedRewards = 0;
+
+    /**
      * @dev Mapping of stakers to their staking info.
      */
     mapping(address => Staker) public stakers;
@@ -121,8 +126,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
             nftCollection.transferFrom(msg.sender, address(this), _tokenIds[i]);
 
+            uint256 rewardRate = calculateRewardRate();
+            staker.rewardRates.push(rewardRate);
             staker.stakedTokenIds.push(_tokenIds[i]);
-            staker.rewardRates.push(1); //TODO
+
             tokenIdToArrayIndex[_tokenIds[i]] = staker.stakedTokenIds.length - 1;
             stakerAddress[_tokenIds[i]] = msg.sender;
         }
@@ -226,6 +233,34 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
 
         _rewards = staker.unclaimedRewards + calculateRewards(_user);
+    }
+
+    /**
+     * @notice Function used to calculate the total staked rewards.
+     */
+    function getTotalStakedRewards() internal view returns (uint256) {
+        uint256 rewards = 0;
+        for (uint256 i; i < stakersArray.length; ++i) {
+            address staker = stakersArray[i];
+            rewards += availableRewards(staker);
+        }
+        return alreadyClaimedRewards + rewards;
+    }
+
+    /**
+     * @notice Function used to calculate the current reward rate.
+     * @return _rewards - The rewards for the user.
+     */
+    function calculateRewardRate() internal view returns (uint256) {
+        uint256 totalRewards = getTotalStakedRewards();
+        if (totalRewards >= 2400000) {
+            return rewardsPerHour / 8;
+        else if (totalRewards >= 1800000) {
+            return rewardsPerHour / 4;
+        } else if (totalRewards >= 1000000) {
+            return rewardsPerHour / 2;
+        }
+        return rewardsPerHour;
     }
 
     /**

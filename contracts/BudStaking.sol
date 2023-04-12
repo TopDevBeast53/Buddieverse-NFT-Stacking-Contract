@@ -48,6 +48,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 timestamp;
     }
 
+    struct Reward {
+        uint256 value;
+        uint256 timestamp;
+    }
+
     /**
      * @dev Struct that holds the staking details for each user.
      */
@@ -194,7 +199,17 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return;
 
-        for (uint256 period = 1; period <= 4; ++period) {
+        Reward[] memory rewards = availableRewards();
+        for (let i; i < rewards.length; i++) {
+            Staker storage staker = stakers[stakersArray[n]];
+
+            staker.unclaimedRewards += rewards[i].value;
+            
+            for (uint256 i; i < staker.stakedTokens.length; ++i) {
+                staker.stakedTokens[i].timestamp = rewards[i].timestamp;
+            }
+        }
+        /*for (uint256 period = 1; period <= 4; ++period) {
             uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
             if (block.timestamp <= startTime) {
                 break;
@@ -216,6 +231,37 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                     
                     staker.unclaimedRewards += elapsed * dailyRewards;
                     staker.stakedTokens[i].timestamp = endTime;
+                }
+            }
+        }*/
+    }
+
+    function availableRewards() public view returns (Reward[] memory _rewards) {
+        uint256 len = stakersArray.length;
+        require(len > 0, "There is no staked tokens");
+
+        _rewards = new Reward[](len);
+
+        uint256 tokenAmount = stakedTokenAmount();
+        if (tokenAmount <= 0) return _rewards;
+
+        for (uint256 period = 1; period <= 4; ++period) {
+            uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
+            if (block.timestamp <= startTime) {
+                break;
+            }
+
+            uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
+            uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+
+            for (uint256 n; n < len; ++n) {
+                address user = stakersArray[n];
+                Staker storage staker = stakers[user];
+            
+                for (uint256 i; i < staker.stakedTokens.length; ++i) {
+                    uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
+                    _rewards[n].value += elapsed * dailyRewards;
+                    _rewards[n].timestamp = endTime;
                 }
             }
         }

@@ -40,13 +40,17 @@ describe("BudStaking contract", function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
+			await time.increase(86400);
+
 			await this.staking.stake([2]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+
+			await time.increase(86400);
 
 			await this.staking.stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
 
-			// await expect(await this.staking.getTotalStakedRewards()).to.eql(BigNumber.from(2));
+			await this.staking.updateRewards();
     });
   });
 });

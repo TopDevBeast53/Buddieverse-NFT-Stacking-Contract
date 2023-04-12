@@ -38,8 +38,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     IERC721 public immutable nftCollection;
 
-    uint256 constant SECONDS_IN_HOUR = 3600;
-
     uint256 constant SECONDS_IN_DAY = 86400;
 
     uint256 constant SECONDS_IN_PERIOD = 180 * SECONDS_IN_DAY;
@@ -197,7 +195,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     /**
      * @notice Function used to update the rewards for a user.
      */
-    function updateRewards() internal {
+    function updateRewards() private {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return;
 
@@ -219,7 +217,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
     }
 
-    function updateRewardsWithTimestamp(uint256 _timestamp, uint256 _dailyRewards) internal {
+    function updateRewardsWithTimestamp(uint256 _timestamp, uint256 _dailyRewards) private {
         for (uint256 n; n < stakersArray.length; ++n) {
             address user = stakersArray[n];
             Staker storage staker = stakers[user];

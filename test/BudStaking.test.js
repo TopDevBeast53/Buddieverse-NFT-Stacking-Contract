@@ -1,3 +1,4 @@
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { BigNumber } = ethers;
 
@@ -39,12 +40,8 @@ describe("BudStaking contract", function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-			await timeout(2000);
-
 			await this.staking.stake([2]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
-
-			await timeout(2000);
 
 			await this.staking.stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));

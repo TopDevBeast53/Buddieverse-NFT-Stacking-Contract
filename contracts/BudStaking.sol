@@ -40,7 +40,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_HOUR = 3600;
 
-    uint256 constant SECONDS_IN_DAY = 1;//86400;
+    uint256 constant SECONDS_IN_DAY = 86400;
 
     uint256 constant SECONDS_IN_PERIOD = 180 * SECONDS_IN_DAY;
 
@@ -199,37 +199,36 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function updateRewards() internal {
         uint256 tokenAmount = stakedTokenAmount();
-        console.log("tokenAmount", tokenAmount);
+        if (tokenAmount <= 0) return;
 
-        if (tokenAmount > 0) {
+        for (uint256 period = 1; period <= 4; ++period) {
+            uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
+            console.log("startTime", block.timestamp, startTime);
+            if (block.timestamp <= startTime) {
+                break;
+            }
 
-            for (uint256 period = 1; period <= 4; ++period) {
-                uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
-                console.log("startTime", block.timestamp, startTime);
+            uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
+            console.log("endTime", endTime);
 
-                if (block.timestamp > startTime) {
-                    uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
-                    console.log("endTime", endTime);
+            uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+            console.log("dailyRewards", dailyRewards);
 
-                    uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
-                    console.log("dailyRewards", dailyRewards);
+            console.log("stakersArray.length", stakersArray.length);
+            updateRewardsWithTimestamp(endTime, dailyRewards);
+        }
+    }
 
-                    console.log("stakersArray.length", stakersArray.length);
-                    for (uint256 n; n < stakersArray.length; ++n) {
-                        address user = stakersArray[n];
-                        Staker memory staker = stakers[user];
-                    
-                        console.log("staker.stakedTokens.length", staker.stakedTokens.length);
-                        for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                            uint256 timestamp = staker.stakedTokens[i].timestamp;
-                            uint256 elapsed = (endTime - timestamp) / SECONDS_IN_DAY;
-                            
-                            staker.unclaimedRewards += elapsed * dailyRewards;
-
-                            staker.stakedTokens[i].timestamp = endTime;
-                        }
-                    }
-                }
+    function updateRewardsWithTimestamp(uint256 _timestamp, uint256 _dailyRewards) internal {
+        for (uint256 n; n < stakersArray.length; ++n) {
+            address user = stakersArray[n];
+            Staker storage staker = stakers[user];
+        
+            for (uint256 i; i < staker.stakedTokens.length; ++i) {
+                uint256 elapsed = (_timestamp - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
+                
+                staker.unclaimedRewards += elapsed * _dailyRewards;
+                staker.stakedTokens[i].timestamp = _timestamp;
             }
         }
     }

@@ -27,6 +27,8 @@ describe("BudStaking contract", function () {
 		this.staking = await Staking.deploy(this.collection.address, this.seedToken.address);
 		await this.staking.deployed();
 
+		this.seedToken.mint(this.staking.address, 3000000);
+
 		await this.collection.setApprovalForAll(this.staking.address, true);
 
 		await this.collection.mint(this.deployer.address, 1);
@@ -49,8 +51,6 @@ describe("BudStaking contract", function () {
 
 			await this.staking.stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
-
-			await this.staking.updateRewards();
     });
   });
 });

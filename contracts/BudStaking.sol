@@ -63,11 +63,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     }
 
     /**
-     * @dev The amount of ERC20 Reward Tokens accrued per hour.
-     */
-    uint256 private rewardsPerHour = 100000;
-
-    /**
      * @dev Mapping of stakers to their staking info.
      */
     mapping(address => Staker) public stakers;
@@ -201,7 +196,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
         for (uint256 period = 1; period <= 4; ++period) {
             uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
-            console.log("startTime", block.timestamp, startTime);
             if (block.timestamp <= startTime) {
                 break;
             }
@@ -213,20 +207,16 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             console.log("dailyRewards", dailyRewards);
 
             console.log("stakersArray.length", stakersArray.length);
-            updateRewardsWithTimestamp(endTime, dailyRewards);
-        }
-    }
-
-    function updateRewardsWithTimestamp(uint256 _timestamp, uint256 _dailyRewards) private {
-        for (uint256 n; n < stakersArray.length; ++n) {
-            address user = stakersArray[n];
-            Staker storage staker = stakers[user];
-        
-            for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                uint256 elapsed = (_timestamp - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
-                
-                staker.unclaimedRewards += elapsed * _dailyRewards;
-                staker.stakedTokens[i].timestamp = _timestamp;
+            for (uint256 n; n < stakersArray.length; ++n) {
+                address user = stakersArray[n];
+                Staker storage staker = stakers[user];
+            
+                for (uint256 i; i < staker.stakedTokens.length; ++i) {
+                    uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
+                    
+                    staker.unclaimedRewards += elapsed * dailyRewards;
+                    staker.stakedTokens[i].timestamp = endTime;
+                }
             }
         }
     }

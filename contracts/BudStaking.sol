@@ -49,6 +49,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     }
 
     struct Reward {
+        address user;
         uint256 value;
         uint256 timestamp;
     }
@@ -111,6 +112,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
     function stake(uint256[] calldata _tokenIds) external whenNotPaused {
+        console.log("Stake", msg.sender);
         updateRewards();
         
         Staker storage staker = stakers[msg.sender];
@@ -202,12 +204,23 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         Reward[] memory rewards = availableRewards();
         for (uint256 n; n < rewards.length; n++) {
             Reward memory reward = rewards[n];
-            Staker storage staker = stakers[stakersArray[n]];
-            staker.unclaimedRewards += reward.value;
+            Staker storage staker = stakers[reward.user];
+
+            staker.unclaimedRewards = reward.value;
             
-            for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                staker.stakedTokens[i].timestamp = reward.timestamp;
+            if (reward.timestamp != 0) {
+                for (uint256 i; i < staker.stakedTokens.length; ++i) {
+                    staker.stakedTokens[i].timestamp = reward.timestamp;
+                }
             }
+        }
+
+        console.log("Staking Status:");
+        for (uint256 n; n < rewards.length; ++n) {
+            Reward memory reward = rewards[n];
+            console.log("\tUser", reward.user);
+            console.log("\t\tReward", stakers[reward.user].unclaimedRewards);
+            console.log("\t\tTokens", stakers[reward.user].stakedTokens.length);
         }
     }
 
@@ -216,6 +229,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         require(len > 0, "There is no staked tokens");
 
         _rewards = new Reward[](len);
+        for (uint256 n; n < len; ++n) {
+            address user = stakersArray[n];
+            _rewards[n].user = user;
+            _rewards[n].value = stakers[user].unclaimedRewards;
+        }
 
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return _rewards;
@@ -232,11 +250,13 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             for (uint256 n; n < len; ++n) {
                 address user = stakersArray[n];
                 Staker storage staker = stakers[user];
-            
+                
                 for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                    uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
-                    _rewards[n].value += elapsed * dailyRewards;
-                    _rewards[n].timestamp = endTime;
+                    if (endTime > staker.stakedTokens[i].timestamp) {
+                        uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
+                        _rewards[n].value += elapsed * dailyRewards;
+                        _rewards[n].timestamp = endTime;
+                    }
                 }
             }
         }

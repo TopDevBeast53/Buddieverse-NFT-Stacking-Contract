@@ -200,40 +200,15 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         if (tokenAmount <= 0) return;
 
         Reward[] memory rewards = availableRewards();
-        for (let i; i < rewards.length; i++) {
+        for (uint256 n; n < rewards.length; n++) {
+            Reward memory reward = rewards[n];
             Staker storage staker = stakers[stakersArray[n]];
-
-            staker.unclaimedRewards += rewards[i].value;
+            staker.unclaimedRewards += reward.value;
             
             for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                staker.stakedTokens[i].timestamp = rewards[i].timestamp;
+                staker.stakedTokens[i].timestamp = reward.timestamp;
             }
         }
-        /*for (uint256 period = 1; period <= 4; ++period) {
-            uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
-            if (block.timestamp <= startTime) {
-                break;
-            }
-
-            uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
-            console.log("endTime", endTime);
-
-            uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
-            console.log("dailyRewards", dailyRewards);
-
-            console.log("stakersArray.length", stakersArray.length);
-            for (uint256 n; n < stakersArray.length; ++n) {
-                address user = stakersArray[n];
-                Staker storage staker = stakers[user];
-            
-                for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                    uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
-                    
-                    staker.unclaimedRewards += elapsed * dailyRewards;
-                    staker.stakedTokens[i].timestamp = endTime;
-                }
-            }
-        }*/
     }
 
     function availableRewards() public view returns (Reward[] memory _rewards) {

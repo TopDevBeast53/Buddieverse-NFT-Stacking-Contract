@@ -222,21 +222,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function updateRewards() private {
         uint256 tokenAmount = stakedTokenAmount();
-        if (tokenAmount <= 0) return;
+        if (tokenAmount > 0) {
+            (uint256[] memory rewardArray, uint256 updatedTime) = getRewards();
+            for (uint256 i; i < rewardArray.length; i++) {
+                Staker storage staker = stakers[stakersArray[i]];
+                staker.unclaimedRewards = rewardArray[i];
+            }
+            _lastUpdatedTime = updatedTime;
 
-        (uint256[] memory rewardArray, uint256 updatedTime) = getRewards();
-        for (uint256 i; i < rewardArray.length; i++) {
-            Staker storage staker = stakers[stakersArray[i]];
-            staker.unclaimedRewards = rewardArray[i];
+            /*console.log("Staking Status:");
+            for (uint256 i; i < rewardArray.length; ++i) {
+                console.log("\tUser", stakersArray[i]);
+                console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
+                console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
+            }*/
         }
-        _lastUpdatedTime = updatedTime;
-
-        /*console.log("Staking Status:");
-        for (uint256 i; i < rewardArray.length; ++i) {
-            console.log("\tUser", stakersArray[i]);
-            console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
-            console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
-        }*/
     }
 
     function getRewards() private view returns (uint256[] memory _rewards, uint256 _updatedTime) {

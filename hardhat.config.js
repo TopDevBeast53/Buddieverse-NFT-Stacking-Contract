@@ -7,7 +7,19 @@ require("./tasks/faucet");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.9",
+  solidity: {
+		compilers: [
+			{
+				version: "0.8.9",
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 1000,
+					},
+				}
+			}
+		]
+	},
   networks: {
     hardhat: {
       chainId: 1337 // We set 1337 to make interacting with MetaMask simpler

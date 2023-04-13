@@ -10,6 +10,8 @@ contract SeedToken is AccessControl, ERC20 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
+    uint256 private MAXIMUM_SUPPLY = 10000000 * 10 ** 18;
+
     constructor(address minter, address burner) ERC20("SEEDS", "SEED") {
         _setupRole(MINTER_ROLE, minter);
         _setupRole(BURNER_ROLE, burner);
@@ -17,6 +19,10 @@ contract SeedToken is AccessControl, ERC20 {
 
     function mint(address to, uint256 amount) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        require(
+            totalSupply() + amount <= MAXIMUM_SUPPLY,
+            "Total supply risks overflowing"
+        );
         _mint(to, amount);
     }
 

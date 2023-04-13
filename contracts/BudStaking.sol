@@ -260,7 +260,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
             uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
             uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
-            console.log("dailyRewards", dailyRewards);
 
             for (uint256 i; i < len; ++i) {
                 Staker memory staker = stakers[stakersArray[i]];
@@ -268,7 +267,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                 for (uint256 n; n < staker.stakedTokenIds.length; ++n) {
                     if (endTime > _updatedTime) {
                         uint256 elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
-                        console.log("elapsed", elapsed);
                         _rewards[i] += elapsed * dailyRewards;
                     }
                 }

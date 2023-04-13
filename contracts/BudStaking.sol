@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title Buddieverse Staking Smart Contract
@@ -231,12 +231,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
         _lastUpdatedTime = updatedTime;
 
-        console.log("Staking Status:");
+        /*console.log("Staking Status:");
         for (uint256 i; i < rewardArray.length; ++i) {
             console.log("\tUser", stakersArray[i]);
             console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
             console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
-        }
+        }*/
     }
 
     function getRewards() private view returns (uint256[] memory _rewards, uint256 _updatedTime) {

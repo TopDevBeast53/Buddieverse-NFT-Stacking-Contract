@@ -111,7 +111,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
     function stake(uint256[] calldata _tokenIds) external whenNotPaused {
-        console.log("Stake", msg.sender);
         updateRewards();
         
         Staker storage staker = stakers[msg.sender];

@@ -225,7 +225,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return;
 
-        (uint256[] memory rewardArray, updatedTime) = getRewards();
+        (uint256[] memory rewardArray, uint256 updatedTime) = getRewards();
         for (uint256 i; i < rewardArray.length; i++) {
             Staker storage staker = stakers[stakersArray[i]];
             staker.unclaimedRewards = rewardArray[i];
@@ -233,7 +233,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         _lastUpdatedTime = updatedTime;
 
         console.log("Staking Status:");
-        for (uint256 i; i < rewardArray.length; ++in) {
+        for (uint256 i; i < rewardArray.length; ++i) {
             console.log("\tUser", stakersArray[i]);
             console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
             console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
@@ -250,7 +250,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
 
         uint256 tokenAmount = stakedTokenAmount();
-        if (tokenAmount <= 0) return _rewards;
+        if (tokenAmount <= 0) return (_rewards, _lastUpdatedTime);
 
         _updatedTime = _lastUpdatedTime;
         for (uint256 period = 1; period <= 4; ++period) {

@@ -80,6 +80,12 @@ describe("BudStaking contract", function () {
 			await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from(5555));
     });
 
+		it("should get user staked info without error", async function () {
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(0);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from(0));
+    });
+
     it("should get user stake information", async function () {
 			await this.staking.stake([1]);
 			await time.increase(SECONDS_IN_DAY);

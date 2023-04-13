@@ -40,7 +40,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_DAY = 86400;
 
-    uint256 constant SECONDS_IN_PERIOD = 180 * SECONDS_IN_DAY;
+    uint256 constant SECONDS_IN_PERIOD = SECONDS_IN_DAY * 180;
 
     struct StakedToken {
         uint256 tokenId;
@@ -94,6 +94,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 private _startTime;
 
+    uint256 private _lastUpdatedTime;
+
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
      * @param _nftCollection - The address of the ERC721 Collection.
@@ -103,6 +105,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         nftCollection = _nftCollection;
         rewardsToken = _rewardsToken;
         _startTime = block.timestamp;
+        _lastUpdatedTime = block.timestamp;
     }
 
     /**
@@ -277,6 +280,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return _rewards;
 
+        uint256 lastUpdatedTime = _lastUpdatedTime;
         for (uint256 period = 1; period <= 4; ++period) {
             uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
             if (block.timestamp <= startTime) {
@@ -285,18 +289,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
             uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
             uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+            console.log("dailyRewards", dailyRewards);
 
             for (uint256 n; n < len; ++n) {
                 address user = stakersArray[n];
                 Staker storage staker = stakers[user];
                 
                 for (uint256 i; i < staker.stakedTokens.length; ++i) {
-                    if (endTime > staker.stakedTokens[i].timestamp) {
-                        uint256 elapsed = (endTime - staker.stakedTokens[i].timestamp) / SECONDS_IN_DAY;
+                    if (endTime > lastUpdatedTime) {
+                        uint256 elapsed = (endTime - lastUpdatedTime) / SECONDS_IN_DAY;
+                        console.log("elapsed", elapsed);
                         _rewards[n].value += elapsed * dailyRewards;
-                        _rewards[n].timestamp = endTime;
                     }
                 }
+                
+                lastUpdatedTime = endTime;
             }
         }
     }

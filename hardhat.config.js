@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require('dotenv').config();
 
 // The next line is part of the sample project, you don't need it in your
 // project. It imports a Hardhat task definition, that can be used for
@@ -20,9 +21,18 @@ module.exports = {
 			}
 		]
 	},
+	defaultNetwork: "localhost",
   networks: {
+		localhost: {
+
+    },
     hardhat: {
       chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
+    },
+    bsc: {
+      url: "https://bsc-testnet.public.blastapi.io",
+			accounts: [`0x${process.env.PRIVATE_KEY}`],
+			chainId: 97,
     }
   }
 };

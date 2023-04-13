@@ -25,7 +25,7 @@ describe("BudStaking contract", function () {
 		this.staking = await Staking.deploy(this.collection.address, this.seedToken.address);
 		await this.staking.deployed();
 
-		this.seedToken.mint(this.staking.address, 3000000);
+		await this.seedToken.connect(this.minter).mint(this.staking.address, 3000000);
 
 		await this.collection.connect(this.deployer).setApprovalForAll(this.staking.address, true);
 		await this.collection.connect(this.minter).setApprovalForAll(this.staking.address, true);
@@ -50,7 +50,7 @@ describe("BudStaking contract", function () {
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
     });
 
-		it("Stake and Withdraw", async function () {
+		it("should stake and withdraw", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
@@ -58,13 +58,35 @@ describe("BudStaking contract", function () {
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
     });
 
+		it("should stake and withdraw multiple tokens", async function () {
+			await this.staking.stake([1, 2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+
+			await this.staking.connect(this.minter).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
+
+			await this.staking.connect(this.minter).withdraw([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			
+			await this.staking.withdraw([1, 2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
+    });
+
 		it("Stake, ClaimRewards, Withdraw", async function () {
+			await expect(await this.seedToken.balanceOf(this.staking.address)).to.eql(BigNumber.from(3000000));
+
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
 			await time.increase(SECONDS_IN_DAY);
 
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from(5555));
+
 			await this.staking.claimRewards();
+
+			await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from(5555));
 
 			await this.staking.withdraw([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));

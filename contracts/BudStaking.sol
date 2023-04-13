@@ -44,7 +44,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     struct StakedToken {
         uint256 tokenId;
-
         uint256 timestamp;
     }
 
@@ -186,6 +185,47 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         staker.unclaimedRewards = 0;
     }
 
+    /**
+     * @notice Function used to get the info for a user: the Token Ids staked and the available rewards.
+     * @param _user - The address of the user.
+     * @return _stakedTokenIds - The array of Token Ids staked by the user.
+     * @return _availableRewards - The available rewards for the user.
+     */
+    function userStakeInfo(address _user)
+        public
+        view
+        returns (uint256[] memory _stakedTokenIds, uint256 _availableRewards)
+    {
+        _stakedTokenIds = new uint256[](stakers[_user].stakedTokens.length);
+        if (stakers[_user].stakedTokens.length > 0) {
+            for (uint256 i; i < stakers[_user].stakedTokens.length; ++i) {
+                _stakedTokenIds[i] = stakers[_user].stakedTokens[i].tokenId;
+            }
+        }
+        return (_stakedTokenIds, availableRewards(_user));
+    }
+
+    /**
+     * @notice Function used to get the available rewards for a user.
+     * @param _user - The address of the user.
+     * @return _rewards - The available rewards for the user.
+     * @dev This includes both the rewards stored but not claimed and the rewards accumulated since the last update.
+     */
+    function availableRewards(address _user) internal view returns (uint256 _rewards) {
+        Staker memory staker = stakers[_user];
+        if (staker.stakedTokens.length == 0) {
+            return staker.unclaimedRewards;
+        }
+
+        Reward[] memory rewards = getRewards();
+        for (uint256 n; n < rewards.length; ++n) {
+            Reward memory reward = rewards[n];
+            if (_user == reward.user) {
+                _rewards += reward.value;
+            }
+        }
+    }
+
     function stakedTokenAmount() public view returns (uint256 amount) {
         amount = 0;
         for (uint256 i; i < stakersArray.length; ++i) {
@@ -201,7 +241,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return;
 
-        Reward[] memory rewards = availableRewards();
+        Reward[] memory rewards = getRewards();
         for (uint256 n; n < rewards.length; n++) {
             Reward memory reward = rewards[n];
             Staker storage staker = stakers[reward.user];
@@ -224,7 +264,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
     }
 
-    function availableRewards() public view returns (Reward[] memory _rewards) {
+    function getRewards() private view returns (Reward[] memory _rewards) {
         uint256 len = stakersArray.length;
         require(len > 0, "There is no staked tokens");
 

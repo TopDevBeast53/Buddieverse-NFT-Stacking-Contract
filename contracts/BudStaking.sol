@@ -202,10 +202,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             return staker.unclaimedRewards;
         }
 
-        (uint256[] memory rewardArray, ) = getRewards();
-        for (uint256 i; i < rewardArray.length; ++i) {
-            if (_user == stakersArray[i]) {
-                _rewards += rewardArray[i];
+        if (stakersArray.length > 0) {
+            (uint256[] memory rewardArray, ) = getRewards();
+            for (uint256 i; i < rewardArray.length; ++i) {
+                if (_user == stakersArray[i]) {
+                    _rewards += rewardArray[i];
+                }
             }
         }
     }

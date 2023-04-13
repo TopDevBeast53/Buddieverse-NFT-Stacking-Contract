@@ -213,8 +213,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     function stakedTokenAmount() public view returns (uint256 amount) {
         amount = 0;
         for (uint256 i; i < stakersArray.length; ++i) {
-            address user = stakersArray[i];
-            amount += stakers[user].stakedTokenIds.length;
+            amount += stakers[stakersArray[i]].stakedTokenIds.length;
         }
     }
 

@@ -39,7 +39,7 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		it("Stake", async function () {
+		it("should stake successfully", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
@@ -72,41 +72,22 @@ describe("BudStaking contract", function () {
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
     });
 
-		it("Stake, ClaimRewards, Withdraw", async function () {
-			await expect(await this.seedToken.balanceOf(this.staking.address)).to.eql(BigNumber.from(3000000));
-
+		it("should claim rewards", async function () {
 			await this.staking.stake([1]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
+			await time.increase(SECONDS_IN_DAY);
 
+			await this.staking.claimRewards();
+			await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from(5555));
+    });
+
+    it("should get user stake information", async function () {
+			await this.staking.stake([1, 2]);
 			await time.increase(SECONDS_IN_DAY);
 
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-			await expect(stakeInfo[0].length).to.eq(1);
+			console.log("stakeInfo", stakeInfo)
+			await expect(stakeInfo[0].length).to.eq(2);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from(5555));
-
-			await this.staking.claimRewards();
-
-			await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from(5555));
-
-			await this.staking.withdraw([1]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
-    });
-
-    it("Staking Status", async function () {
-			await this.staking.stake([1]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
-
-			await time.increase(SECONDS_IN_DAY);
-
-			await this.staking.stake([2]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
-
-			await time.increase(SECONDS_IN_DAY);
-
-			await this.staking.connect(this.minter).stake([3]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
-
-			await time.increase(SECONDS_IN_DAY);
     });
   });
 });

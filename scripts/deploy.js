@@ -41,7 +41,11 @@ async function main() {
   console.log("Staking contract address:", staking.address);
 
   console.log("Mint Seed token to address", staking.address);
-  await seedToken.mint(staking.address, 3000000);
+  const ethersToWei = ethers.utils.parseUnits("3000000", "ether");
+  await seedToken.mint(staking.address, ethersToWei);
+
+  const balance = await seedToken.balanceOf(staking.address);
+  console.log("Balance of seed token", balance);
 
   console.log("Set approval for deployer", staking.address);
   await collection.setApprovalForAll(staking.address, true);

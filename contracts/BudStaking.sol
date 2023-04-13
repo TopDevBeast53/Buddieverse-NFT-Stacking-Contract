@@ -42,6 +42,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_PERIOD = SECONDS_IN_DAY * 180;
 
+    uint256 constant REWARDS_PERIOD_1 = 1000000 * 10 ** 18;
+    
+    uint256 constant REWARDS_PERIOD_2 = 800000 * 10 ** 18;
+    
+    uint256 constant REWARDS_PERIOD_3 = 600000 * 10 ** 18;
+
     /**
      * @dev Struct that holds the staking details for each user.
      */
@@ -169,8 +175,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         require(staker.stakedTokenIds.length > 0, "You have no tokens staked");
 
         updateRewards();
+
         require(staker.unclaimedRewards > 0, "You have no rewards to claim");
-        
         rewardsToken.safeTransfer(msg.sender, staker.unclaimedRewards);
 
         staker.unclaimedRewards = 0;
@@ -280,11 +286,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     function periodRewards(uint256 period) private pure returns (uint256) {
         if (period == 1) {
-            return 1000000;
+            return REWARDS_PERIOD_1;
         } else if (period == 2) {
-            return 800000;
+            return REWARDS_PERIOD_2;
         } else {
-            return 600000;
+            return REWARDS_PERIOD_3;
         }
     }
 

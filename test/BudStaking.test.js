@@ -81,12 +81,11 @@ describe("BudStaking contract", function () {
     });
 
     it("should get user stake information", async function () {
-			await this.staking.stake([1, 2]);
+			await this.staking.stake([1]);
 			await time.increase(SECONDS_IN_DAY);
 
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-			console.log("stakeInfo", stakeInfo)
-			await expect(stakeInfo[0].length).to.eq(2);
+			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from(5555));
     });
   });

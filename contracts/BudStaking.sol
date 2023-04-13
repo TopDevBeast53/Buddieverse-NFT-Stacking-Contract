@@ -42,12 +42,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_PERIOD = SECONDS_IN_DAY * 180;
 
-    struct Reward {
-        address user;
-        
-        uint256 value;
-    }
-
     /**
      * @dev Struct that holds the staking details for each user.
      */
@@ -208,11 +202,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             return staker.unclaimedRewards;
         }
 
-        (Reward[] memory rewards, updatedTime) = getRewards();
-        for (uint256 n; n < rewards.length; ++n) {
-            Reward memory reward = rewards[n];
-            if (_user == reward.user) {
-                _rewards += reward.value;
+        (uint256[] memory rewardArray, ) = getRewards();
+        for (uint256 i; i < rewardArray.length; ++i) {
+            if (_user == stakersArray[i]) {
+                _rewards += rewardArray[i];
             }
         }
     }
@@ -232,33 +225,28 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return;
 
-        (Reward[] memory rewards, updatedTime) = getRewards();
-        for (uint256 n; n < rewards.length; n++) {
-            Reward memory reward = rewards[n];
-            Staker storage staker = stakers[reward.user];
-            
-            staker.unclaimedRewards = reward.value;
+        (uint256[] memory rewardArray, updatedTime) = getRewards();
+        for (uint256 i; i < rewardArray.length; i++) {
+            Staker storage staker = stakers[stakersArray[i]];
+            staker.unclaimedRewards = rewardArray[i];
         }
         _lastUpdatedTime = updatedTime;
 
         console.log("Staking Status:");
-        for (uint256 n; n < rewards.length; ++n) {
-            Reward memory reward = rewards[n];
-            console.log("\tUser", reward.user);
-            console.log("\t\tReward", stakers[reward.user].unclaimedRewards);
-            console.log("\t\tTokens", stakers[reward.user].stakedTokenIds.length);
+        for (uint256 i; i < rewardArray.length; ++in) {
+            console.log("\tUser", stakersArray[i]);
+            console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
+            console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
         }
     }
 
-    function getRewards() private view returns (Reward[] memory _rewards, uint256 _updatedTime) {
+    function getRewards() private view returns (uint256[] memory _rewards, uint256 _updatedTime) {
         uint256 len = stakersArray.length;
         require(len > 0, "There is no staked tokens");
 
-        _rewards = new Reward[](len);
-        for (uint256 n; n < len; ++n) {
-            address user = stakersArray[n];
-            _rewards[n].user = user;
-            _rewards[n].value = stakers[user].unclaimedRewards;
+        _rewards = new uint256[](len);
+        for (uint256 i; i < len; ++i) {
+            _rewards[i] = stakers[stakersArray[i]].unclaimedRewards;
         }
 
         uint256 tokenAmount = stakedTokenAmount();
@@ -275,15 +263,14 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
             console.log("dailyRewards", dailyRewards);
 
-            for (uint256 n; n < len; ++n) {
-                address user = stakersArray[n];
-                Staker storage staker = stakers[user];
+            for (uint256 i; i < len; ++i) {
+                Staker storage staker = stakers[stakersArray[i]];
                 
-                for (uint256 i; i < staker.stakedTokenIds.length; ++i) {
+                for (uint256 n; n < staker.stakedTokenIds.length; ++n) {
                     if (endTime > _updatedTime) {
                         uint256 elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
                         console.log("elapsed", elapsed);
-                        _rewards[n].value += elapsed * dailyRewards;
+                        _rewards[i] += elapsed * dailyRewards;
                     }
                 }
                 

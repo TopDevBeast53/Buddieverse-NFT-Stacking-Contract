@@ -23,11 +23,31 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const SeedToken = await ethers.getContractFactory("SeedToken");
-  const seedToken = await SeedToken.deploy();
+  const seedToken = await SeedToken.deploy(deployer.address, deployer.address);
   await seedToken.deployed();
 
   console.log("SeedToken address:", seedToken.address);
 
+  const NFTCollection = await ethers.getContractFactory("NFTCollection");
+  const collection = await NFTCollection.deploy();
+  await collection.deployed();
+
+  console.log("NFTCollection address:", collection.address);
+
+  const Staking = await ethers.getContractFactory("BudStaking");
+  const staking = await Staking.deploy(collection.address, seedToken.address);
+	await staking.deployed();
+
+  console.log("Staking contract address:", staking.address);
+
+  console.log("Mint Seed token to address", staking.address);
+  await seedToken.mint(staking.address, 3000000);
+
+  console.log("Set approval for deployer", staking.address);
+  await collection.setApprovalForAll(staking.address, true);
+
+  await collection.mint(deployer.address, 1);
+	await collection.mint(deployer.address, 2);
 }
 
 main()

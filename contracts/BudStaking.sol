@@ -263,7 +263,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             console.log("dailyRewards", dailyRewards);
 
             for (uint256 i; i < len; ++i) {
-                Staker storage staker = stakers[stakersArray[i]];
+                Staker memory staker = stakers[stakersArray[i]];
                 
                 for (uint256 n; n < staker.stakedTokenIds.length; ++n) {
                     if (endTime > _updatedTime) {

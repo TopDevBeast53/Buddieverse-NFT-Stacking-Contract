@@ -114,6 +114,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         _lastUpdatedTime = block.timestamp;
     }
 
+    function startTime() external view returns (uint256) {
+        return _startTime;
+    }
+
     /**
      * @notice Function used to stake ERC721 Tokens.
      * @param _tokenIds - The array of Token Ids to stake.
@@ -274,12 +278,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
         _updatedTime = _lastUpdatedTime;
         for (uint256 period = 1; period <= 4; ++period) {
-            uint256 startTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
-            if (block.timestamp <= startTime) {
+            uint256 periodStartTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
+            if (block.timestamp <= periodStartTime) {
                 break;
             }
 
-            uint256 endTime = Math.min(block.timestamp, startTime + SECONDS_IN_PERIOD);
+            uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
             uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
 
             for (uint256 i; i < len; ++i) {

@@ -48,14 +48,25 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     
     uint256 constant REWARDS_PERIOD_3 = 600000 * 10 ** 18;
 
+    struct StakedToken {
+        /**
+         * @dev Token Id staked by the user.
+         */
+        uint256 tokenId;
+        /**
+         * @dev Timestamp staked
+         */
+        uint256 timestamp;
+    }
+
     /**
      * @dev Struct that holds the staking details for each user.
      */
     struct Staker {
         /**
-         * @dev The array of Token Ids staked by the user.
+         * @dev The array of Tokens staked by the user.
          */
-        uint256[] stakedTokenIds;
+        StakedToken[] stakedTokens;
         /**
          * @dev The amount of ERC20 Reward Tokens that have not been claimed by the user.
          */
@@ -83,7 +94,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     mapping(address => uint256) public stakerToArrayIndex;
 
     /**
-     * @notice Mapping of Token Id to it's index in the staker's stakedTokenIds array.
+     * @notice Mapping of Token Id to it's index in the staker's stakedTokens array.
      */
     mapping(uint256 => uint256) public tokenIdToArrayIndex;
 
@@ -112,20 +123,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         updateRewards();
         
         Staker storage staker = stakers[msg.sender];
-        if (staker.stakedTokenIds.length == 0) {
+        if (staker.stakedTokens.length == 0) {
             stakersArray.push(msg.sender);
             stakerToArrayIndex[msg.sender] = stakersArray.length - 1;
         }
 
         uint256 len = _tokenIds.length;
         for (uint256 i; i < len; ++i) {
-            require(nftCollection.ownerOf(_tokenIds[i]) == msg.sender, "Can't stake tokens you don't own!");
+            uint256 tokenId = _tokenIds[i];
+            require(nftCollection.ownerOf(tokenId) == msg.sender, "Can't stake tokens you don't own!");
 
-            nftCollection.transferFrom(msg.sender, address(this), _tokenIds[i]);
+            nftCollection.transferFrom(msg.sender, address(this), tokenId);
 
-            staker.stakedTokenIds.push(_tokenIds[i]);
-            tokenIdToArrayIndex[_tokenIds[i]] = staker.stakedTokenIds.length - 1;
-            stakerAddress[_tokenIds[i]] = msg.sender;
+            staker.stakedTokens.push(StakedToken(tokenId, block.timestamp));
+            tokenIdToArrayIndex[tokenId] = staker.stakedTokens.length - 1;
+            stakerAddress[tokenId] = msg.sender;
         }
     }
 
@@ -135,28 +147,29 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function withdraw(uint256[] calldata _tokenIds) external nonReentrant {
         Staker storage staker = stakers[msg.sender];
-        require(staker.stakedTokenIds.length > 0, "You have no tokens staked");
+        require(staker.stakedTokens.length > 0, "You have no tokens staked");
 
         updateRewards();
 
         uint256 lenToWithdraw = _tokenIds.length;
         for (uint256 i; i < lenToWithdraw; ++i) {
-            require(stakerAddress[_tokenIds[i]] == msg.sender);
+            uint256 tokenId = _tokenIds[i];
+            require(stakerAddress[tokenId] == msg.sender);
 
-            uint256 index = tokenIdToArrayIndex[_tokenIds[i]];
-            uint256 lastTokenIndex = staker.stakedTokenIds.length - 1;
+            uint256 index = tokenIdToArrayIndex[tokenId];
+            uint256 lastTokenIndex = staker.stakedTokens.length - 1;
             if (index != lastTokenIndex) {
-                staker.stakedTokenIds[index] = staker.stakedTokenIds[lastTokenIndex];
-                tokenIdToArrayIndex[staker.stakedTokenIds[index]] = index;
+                staker.stakedTokens[index] = staker.stakedTokens[lastTokenIndex];
+                tokenIdToArrayIndex[staker.stakedTokens[index].tokenId] = index;
             }
-            staker.stakedTokenIds.pop();
+            staker.stakedTokens.pop();
 
-            delete stakerAddress[_tokenIds[i]];
+            delete stakerAddress[tokenId];
 
-            nftCollection.transferFrom(address(this), msg.sender, _tokenIds[i]);
+            nftCollection.transferFrom(address(this), msg.sender, tokenId);
         }
 
-        if (staker.stakedTokenIds.length == 0) {
+        if (staker.stakedTokens.length == 0) {
             uint256 index = stakerToArrayIndex[msg.sender];
             uint256 lastStakerIndex = stakersArray.length - 1;
             if (index != lastStakerIndex) {
@@ -172,7 +185,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function claimRewards() external {
         Staker storage staker = stakers[msg.sender];
-        require(staker.stakedTokenIds.length > 0, "You have no tokens staked");
+        require(staker.stakedTokens.length > 0, "You have no tokens staked");
 
         updateRewards();
 
@@ -185,15 +198,15 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     /**
      * @notice Function used to get the info for a user: the Token Ids staked and the available rewards.
      * @param _user - The address of the user.
-     * @return _stakedTokenIds - The array of Token Ids staked by the user.
+     * @return _stakedTokens - The array of Token Ids staked by the user.
      * @return _availableRewards - The available rewards for the user.
      */
     function userStakeInfo(address _user)
         public
         view
-        returns (uint256[] memory _stakedTokenIds, uint256 _availableRewards)
+        returns (StakedToken[] memory _stakedTokens, uint256 _availableRewards)
     {
-        return (stakers[_user].stakedTokenIds, availableRewards(_user));
+        return (stakers[_user].stakedTokens, availableRewards(_user));
     }
 
     /**
@@ -204,7 +217,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     function availableRewards(address _user) internal view returns (uint256 _rewards) {
         Staker memory staker = stakers[_user];
-        if (staker.stakedTokenIds.length == 0) {
+        if (staker.stakedTokens.length == 0) {
             return staker.unclaimedRewards;
         }
 
@@ -221,7 +234,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     function stakedTokenAmount() public view returns (uint256 amount) {
         amount = 0;
         for (uint256 i; i < stakersArray.length; ++i) {
-            amount += stakers[stakersArray[i]].stakedTokenIds.length;
+            amount += stakers[stakersArray[i]].stakedTokens.length;
         }
     }
 
@@ -242,7 +255,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             for (uint256 i; i < rewardArray.length; ++i) {
                 console.log("\tUser", stakersArray[i]);
                 console.log("\t\tReward", stakers[stakersArray[i]].unclaimedRewards);
-                console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokenIds.length);
+                console.log("\t\tTokens", stakers[stakersArray[i]].stakedTokens.length);
             }*/
         }
     }
@@ -272,7 +285,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             for (uint256 i; i < len; ++i) {
                 Staker memory staker = stakers[stakersArray[i]];
                 
-                for (uint256 n; n < staker.stakedTokenIds.length; ++n) {
+                for (uint256 n; n < staker.stakedTokens.length; ++n) {
                     if (endTime > _updatedTime) {
                         uint256 elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
                         _rewards[i] += elapsed * dailyRewards;

@@ -155,6 +155,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
         updateRewards();
 
+        if (staker.unclaimedRewards > 0) {
+            rewardsToken.safeTransfer(msg.sender, staker.unclaimedRewards);
+            staker.unclaimedRewards = 0;
+        }
+
         uint256 lenToWithdraw = _tokenIds.length;
         for (uint256 i; i < lenToWithdraw; ++i) {
             uint256 tokenId = _tokenIds[i];

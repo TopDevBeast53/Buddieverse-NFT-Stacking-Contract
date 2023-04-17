@@ -23,10 +23,10 @@ async function main() {
   const collection = new ethers.Contract("0x96FCB2984F43f652E4430763a7e5Bb76146F5371", NFTCollection.abi, deployer);
   console.log("NFTCollection address:", collection.address);
 
-  const to = "0xDFE055245aB0b67fB0B5AE3EA28CD1fee40299df";
-  await collection.mint(to, 3);
-	await collection.mint(to, 4);
-	await collection.mint(to, 5);
+  const to = "0x932baD9228d2BB187548677ce6712f9b001993a9";
+  await collection.mint(to, 8);
+	await collection.mint(to, 9);
+	await collection.mint(to, 10);
 }
 
 main()

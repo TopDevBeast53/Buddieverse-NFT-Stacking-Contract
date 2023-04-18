@@ -38,7 +38,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
      */
     IERC721 public immutable nftCollection;
 
-    uint256 constant SECONDS_IN_DAY = 86400;
+    uint256 constant SECONDS_IN_DAY = 3600;
 
     uint256 constant SECONDS_IN_PERIOD = SECONDS_IN_DAY * 180;
 

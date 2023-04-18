@@ -31,6 +31,7 @@ async function main() {
   const Staking = await ethers.getContractFactory("BudStaking");
   const staking = await Staking.deploy(collection.address, seedToken.address);
 	await staking.deployed();
+  console.log("Staking contract address:", staking.address);
 
   console.log("Mint Seed token to address", staking.address);
   const ethersToWei = ethers.utils.parseUnits("3000000", "ether");

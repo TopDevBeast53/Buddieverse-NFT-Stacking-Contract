@@ -41,8 +41,9 @@ async function main() {
   console.log("Set approval for deployer", staking.address);
   await collection.setApprovalForAll(staking.address, true);
 
-  await collection.mint(deployer.address, 3);
-	await collection.mint(deployer.address, 4);
+  await collection.mint(deployer.address, 1);
+	await collection.mint(deployer.address, 2);
+	await collection.mint(deployer.address, 3);
 }
 
 main()

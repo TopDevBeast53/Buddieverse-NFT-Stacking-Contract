@@ -51,3 +51,7 @@ main()
     console.error(error);
     process.exit(1);
   });
+
+
+
+//npx hardhat run scripts/deploy-staking-v2.js --network bsc

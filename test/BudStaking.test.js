@@ -87,7 +87,7 @@ describe("BudStaking contract", function () {
 			await expect(stakeInfo[1]).to.eq(BigNumber.from(0));
     });
 
-		it("should get user stake information", async function () {
+    it("should get user stake information", async function () {
 			await this.staking.stake([1]);
 			await time.increase(7600);
 

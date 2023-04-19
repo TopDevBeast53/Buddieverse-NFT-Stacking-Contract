@@ -300,9 +300,9 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                         _rewards[i] += elapsed * dailyRewards;
                     }
                 }
-                
-                _updatedTime = endTime;
             }
+
+            _updatedTime = endTime;
         }
     }
 

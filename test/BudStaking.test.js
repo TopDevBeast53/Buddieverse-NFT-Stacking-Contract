@@ -89,6 +89,40 @@ describe("BudStaking contract", function () {
 
     it("should get user stake information", async function () {
 			await this.staking.stake([1]);
+			await time.increase(7600);
+
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			
+			await time.increase(3600 * 13 + 51 * 60);
+
+			const info2 = await this.staking.userStakeInfo(this.alice.address);
+			console.log('info2', info2)
+			await expect(info2[0].length).to.eq(1);
+			await expect(info2[1]).to.gt(BigNumber.from("0"));
+    });
+
+		it("should get user stake information", async function () {
+			await this.staking.stake([1]);
+			await time.increase(7600);
+
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.gt(BigNumber.from("0"));
+
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			
+			await time.increase(3600 * 13 + 51 * 60);
+
+			const info2 = await this.staking.userStakeInfo(this.alice.address);
+			console.log('info2', info2)
+			await expect(info2[0].length).to.eq(1);
+			await expect(info2[1]).to.gt(BigNumber.from("0"));
+    });
+
+    it("should get user stake information", async function () {
+			await this.staking.stake([1]);
 			await time.increase(SECONDS_IN_DAY);
 
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);

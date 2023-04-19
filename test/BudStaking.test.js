@@ -40,60 +40,56 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		// it("should stake successfully", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
+		it("should stake successfully", async function () {
+			await this.staking.stake([1]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-		// 	await this.staking.stake([2]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			await this.staking.stake([2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 
-		// 	await this.staking.connect(this.alice).stake([3]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
-    // });
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
+    });
 
-		// it("should stake and withdraw", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
+		it("should stake and withdraw", async function () {
+			await this.staking.stake([1]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-		// 	await this.staking.withdraw([1]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
-    // });
+			await this.staking.withdraw([1]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
+    });
 
-		// it("should stake and withdraw multiple tokens", async function () {
-		// 	await this.staking.stake([1, 2]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+		it("should stake and withdraw multiple tokens", async function () {
+			await this.staking.stake([1, 2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 
-		// 	await this.staking.connect(this.alice).stake([3]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
 
-		// 	await this.staking.connect(this.alice).withdraw([3]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			await this.staking.connect(this.alice).withdraw([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 			
-		// 	await this.staking.withdraw([1, 2]);
-		// 	await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
-    // });
+			await this.staking.withdraw([1, 2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
+    });
 
-		// it("should claim rewards", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY);
+		it("should claim rewards", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY);
 
-		// 	await this.staking.claimRewards();
-		// 	await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from("5555555555555555555555"));
-    // });
+			await this.staking.claimRewards();
+			await expect(await this.seedToken.balanceOf(this.deployer.address)).to.eql(BigNumber.from("5555555555555555555555"));
+    });
 
-		// it("should get user staked info without error", async function () {
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(0);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from(0));
-    // });
+		it("should get user staked info without error", async function () {
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(0);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from(0));
+    });
 
 		it("should get user stake information", async function () {
 			await this.staking.stake([1]);
 			await time.increase(7600);
-
-			// const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-			// await expect(stakeInfo[0].length).to.eq(1);
-			// await expect(stakeInfo[1]).to.gt(BigNumber.from("0"));
 
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
@@ -106,49 +102,68 @@ describe("BudStaking contract", function () {
 			await expect(info2[1]).to.gt(BigNumber.from("0"));
     });
 
-    // it("should get user stake information", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY);
+		it("should get user stake information", async function () {
+			await this.staking.stake([1]);
+			await time.increase(7600);
 
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(1);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from("5555555555555555555555"));
-    // });
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.gt(BigNumber.from("0"));
 
-		// it("should be correct rewards in period 1", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY * 180);
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			
+			await time.increase(3600 * 13 + 51 * 60);
 
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(1);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from("999999999999999999999900"));
-    // });
+			const info2 = await this.staking.userStakeInfo(this.alice.address);
+			console.log('info2', info2)
+			await expect(info2[0].length).to.eq(1);
+			await expect(info2[1]).to.gt(BigNumber.from("0"));
+    });
 
-		// it("should be correct rewards in period 2", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY * 180 * 2);
+    it("should get user stake information", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY);
 
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(1);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from("1799999999999999999999820"));
-    // });
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("5555555555555555555555"));
+    });
 
-		// it("should be correct rewards in period 3", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY * 180 * 3);
+		it("should be correct rewards in period 1", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY * 180);
 
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(1);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from("2399999999999999999999760"));
-    // });
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("999999999999999999999900"));
+    });
 
-		// it("should be correct rewards in period 4", async function () {
-		// 	await this.staking.stake([1]);
-		// 	await time.increase(SECONDS_IN_DAY * 180 * 4);
+		it("should be correct rewards in period 2", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY * 180 * 2);
 
-		// 	const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
-		// 	await expect(stakeInfo[0].length).to.eq(1);
-		// 	await expect(stakeInfo[1]).to.eq(BigNumber.from("2999999999999999999999700"));
-    // });
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("1799999999999999999999820"));
+    });
+
+		it("should be correct rewards in period 3", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY * 180 * 3);
+
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("2399999999999999999999760"));
+    });
+
+		it("should be correct rewards in period 4", async function () {
+			await this.staking.stake([1]);
+			await time.increase(SECONDS_IN_DAY * 180 * 4);
+
+			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("2999999999999999999999700"));
+    });
   });
 });

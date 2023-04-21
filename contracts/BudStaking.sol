@@ -316,27 +316,6 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
     }
 
-    function migrate(address to) external onlyOwner {
-        require(to != address(0), "New contract is the zero address");
-
-        uint256 balance = rewardsToken.balanceOf(address(this));
-        if (balance > 0) {
-            rewardsToken.safeTransfer(to, balance);
-        }
-
-        uint256 len = stakersArray.length;
-        if (len > 0) {
-            for (uint256 i; i < len; ++i) {
-                Staker memory staker = stakers[stakersArray[i]];
-                
-                for (uint256 n; n < staker.stakedTokens.length; ++n) {
-                    uint tokenId = staker.stakedTokens[n].tokenId;
-                    nftCollection.transferFrom(address(this), to, tokenId);
-                }
-            }
-        }
-    }
-
     /**
      * @dev Pause staking.
      */

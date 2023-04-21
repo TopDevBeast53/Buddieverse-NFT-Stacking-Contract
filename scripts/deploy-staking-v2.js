@@ -38,8 +38,7 @@ async function main() {
 
   console.log("Mint Seed token to address", staking.address);
   const ethersToWei = ethers.utils.parseUnits("3000000", "ether");
-  await seedToken.mint(deployer.address, ethersToWei);
-  await seedToken.approve(staking.address, ethersToWei);
+  await seedToken.mint(staking.address, ethersToWei);
 }
 
 main()

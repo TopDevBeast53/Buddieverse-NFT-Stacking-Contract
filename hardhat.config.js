@@ -29,6 +29,11 @@ module.exports = {
     hardhat: {
       chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
     },
+		exosama: {
+			url: "https://rpc.exosama.com",
+			accounts: [`0x${process.env.PRIVATE_KEY}`],
+			chainId: 2109,
+		},
     bsc: {
       url: "https://bsc-testnet.public.blastapi.io",
 			accounts: [`0x${process.env.PRIVATE_KEY}`],

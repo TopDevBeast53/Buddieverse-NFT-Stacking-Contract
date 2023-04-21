@@ -58,25 +58,25 @@ describe("BudStaking contract", function () {
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
     });
 
-		it("should stake and withdraw", async function () {
+		it("should stake and unstake", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-			await this.staking.withdraw([1]);
+			await this.staking.unstake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
     });
 
-		it("should stake and withdraw multiple tokens", async function () {
+		it("should stake and unstake multiple tokens", async function () {
 			await this.staking.stake([1, 2]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
 
-			await this.staking.connect(this.alice).withdraw([3]);
+			await this.staking.connect(this.alice).unstake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 			
-			await this.staking.withdraw([1, 2]);
+			await this.staking.unstake([1, 2]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(0));
     });
 

@@ -154,10 +154,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     }
 
     /**
-     * @notice Function used to withdraw ERC721 Tokens.
-     * @param _tokenIds - The array of Token Ids to withdraw.
+     * @notice Function used to unstake ERC721 Tokens.
+     * @param _tokenIds - The array of Token Ids to unstake.
      */
-    function withdraw(uint256[] calldata _tokenIds) external nonReentrant {
+    function unstake(uint256[] calldata _tokenIds) external nonReentrant {
         Staker storage staker = stakers[msg.sender];
         require(staker.stakedTokens.length > 0, "You have no tokens staked");
 

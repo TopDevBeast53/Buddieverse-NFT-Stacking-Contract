@@ -40,6 +40,13 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
+		it("should be approved", async function () {
+			await expect(await this.collection.isApprovedForAll(this.staking.address, this.deployer.address)).to.eql(true);
+
+			const rewards = ethers.utils.parseUnits("3000000", "ether");
+			await expect(await this.seedToken.allowance(this.staking.address, this.deployer.address)).to.eql(rewards);
+    });
+
 		it("should stake successfully", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
@@ -87,24 +94,23 @@ describe("BudStaking contract", function () {
 			await expect(stakeInfo[1]).to.eq(BigNumber.from(0));
     });
 
-    it("should get user stake information", async function () {
+    it("should get user stake information 1", async function () {
 			await this.staking.stake([1]);
 			await time.increase(7600);
 
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 			
-			await time.increase(3600 * 13 + 51 * 60);
+			await time.increase(3600 * 24 * 2);
 
 			const info2 = await this.staking.userStakeInfo(this.alice.address);
-			console.log('info2', info2)
 			await expect(info2[0].length).to.eq(1);
 			await expect(info2[1]).to.gt(BigNumber.from("0"));
     });
 
-		it("should get user stake information", async function () {
+		it("should get user stake information 2", async function () {
 			await this.staking.stake([1]);
-			await time.increase(7600);
+			await time.increase(3600 * 24 + 10);
 
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
 			await expect(stakeInfo[0].length).to.eq(1);
@@ -113,10 +119,9 @@ describe("BudStaking contract", function () {
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 			
-			await time.increase(3600 * 13 + 51 * 60);
+			await time.increase(3600 * 24 * 4);
 
 			const info2 = await this.staking.userStakeInfo(this.alice.address);
-			console.log('info2', info2)
 			await expect(info2[0].length).to.eq(1);
 			await expect(info2[1]).to.gt(BigNumber.from("0"));
     });

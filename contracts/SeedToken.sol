@@ -12,7 +12,7 @@ contract SeedToken is AccessControl, ERC20 {
 
     uint256 private MAXIMUM_SUPPLY = 10000000 * 10 ** 18;
 
-    constructor(address minter, address burner) ERC20("SEEDS", "SEED") {
+    constructor(address minter, address burner) ERC20("SEEDS", "$SEEDS") {
         _setupRole(MINTER_ROLE, minter);
         _setupRole(BURNER_ROLE, burner);
     }

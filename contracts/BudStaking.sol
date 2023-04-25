@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 /**
  * @title Buddieverse Staking Smart Contract
@@ -293,14 +293,15 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return (_rewards, _lastUpdatedTime);
 
+        // Get last updated time.
         _updatedTime = _lastUpdatedTime;
 
         if (_updatedTime > 0) {
             uint256 endTime = _updatedTime + SECONDS_IN_DAY;
             if (block.timestamp >= endTime) {
-                // Calculate number of tokens which ara able to get rewards in this duration.
-                uint256 numOfTokens = 0;
+                // Calculate number of tokens that can be rewarded in this duration.
                 uint256[] memory durations = new uint256[](len);
+                uint256 numOfTokens = 0;
                 for (uint256 i; i < len; ++i) {                    
                     Staker memory staker = stakers[stakersArray[i]];
                     for (uint256 n; n < staker.stakedTokens.length; ++n) {
@@ -314,7 +315,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                 }
 
                 if (numOfTokens > 0) {
-                    // Calculate daily reards
+                    // Daily reward calculation
                     uint256 period = currentPeriod();
                     uint256 dailyRewards = (periodRewards(period) / 180) / numOfTokens;
                     
@@ -330,6 +331,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             }
         }
 
+        // Here, the number of tokens that can be rewarded is `tokenAmount`.
         for (uint256 period = 1; period <= 4; ++period) {
             uint256 periodStartTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
             if (block.timestamp <= periodStartTime) {

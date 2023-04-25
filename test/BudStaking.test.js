@@ -40,19 +40,19 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		/*it("should be approved", async function () {
+		it("should be approved", async function () {
 			await expect(await this.collection.isApprovedForAll(this.staking.address, this.deployer.address)).to.eql(true);
 
 			const rewards = ethers.utils.parseUnits("3000000", "ether");
 			await expect(await this.seedToken.allowance(this.staking.address, this.deployer.address)).to.eql(rewards);
-    });*/
+    });
 
 		it("should stake successfully", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-			// await this.staking.stake([2]);
-			// await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			await this.staking.stake([2]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));

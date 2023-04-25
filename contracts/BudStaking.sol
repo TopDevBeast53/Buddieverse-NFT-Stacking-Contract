@@ -296,6 +296,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         // Get last updated time.
         _updatedTime = _lastUpdatedTime;
 
+        // Some tokens cannot be rewarded here.
+        // Therefore, it is necessary to calculate the number of tokens that can be rewarded.
         if (_updatedTime > 0) {
             uint256 endTime = _updatedTime + SECONDS_IN_DAY;
             if (block.timestamp >= endTime) {

@@ -293,26 +293,16 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return (_rewards, _lastUpdatedTime);
 
-        uint256[] memory durations = new uint256[](len);
         _updatedTime = _lastUpdatedTime;
 
-        for (uint256 period = 1; period <= 4; ++period) {
-            uint256 periodStartTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
-            if (block.timestamp <= periodStartTime) {
-                break;
-            }
-
-            uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
-            endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY) * SECONDS_IN_DAY;
-            
-            if (endTime > _updatedTime) {
-                uint256 numOfTokens = 0;                
-
+        if (_updatedTime > 0) {
+            uint256 endTime = _updatedTime + SECONDS_IN_DAY;
+            if (block.timestamp >= endTime) {
                 // Calculate number of tokens which ara able to get rewards in this duration.
+                uint256 numOfTokens = 0;
+                uint256[] memory durations = new uint256[](len);
                 for (uint256 i; i < len; ++i) {                    
                     Staker memory staker = stakers[stakersArray[i]];
-                    
-                    durations[i] = 0;
                     for (uint256 n; n < staker.stakedTokens.length; ++n) {
                         uint256 stakedTime = Math.max(_updatedTime, staker.stakedTokens[n].timestamp);
                         uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
@@ -324,8 +314,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                 }
 
                 if (numOfTokens > 0) {
+                    // Calculate daily reards
+                    uint256 period = currentPeriod();
                     uint256 dailyRewards = (periodRewards(period) / 180) / numOfTokens;
-
+                    
                     // Update rewards
                     for (uint256 i; i < len; ++i) {
                         if (durations[i] > 0) {
@@ -334,9 +326,41 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                     }
                 }
 
+                _updatedTime += SECONDS_IN_DAY;
+            }
+        }
+
+        for (uint256 period = 1; period <= 4; ++period) {
+            uint256 periodStartTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
+            if (block.timestamp <= periodStartTime) {
+                break;
+            }
+
+            uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
+            endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY) * SECONDS_IN_DAY;
+            
+            if (endTime > _updatedTime) {
+                uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+
+                for (uint256 i; i < len; ++i) {
+                    Staker memory staker = stakers[stakersArray[i]];
+                    
+                    for (uint256 n; n < staker.stakedTokens.length; ++n) {
+                        uint256 stakedTime = Math.max(_updatedTime, staker.stakedTokens[n].timestamp);
+                        uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
+                        if (elapsed > 0) {
+                            _rewards[i] += elapsed * dailyRewards;
+                        }
+                    }
+                }
+                
                 _updatedTime = endTime;
             }
         }
+    }
+
+    function currentPeriod() public view returns (uint256) {
+        return 1 + ((block.timestamp - _startTime) / SECONDS_IN_PERIOD);
     }
 
     function periodRewards(uint256 period) private pure returns (uint256) {

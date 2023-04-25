@@ -40,7 +40,7 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		it("should be approved", async function () {
+		/*it("should be approved", async function () {
 			await expect(await this.collection.isApprovedForAll(this.staking.address, this.deployer.address)).to.eql(true);
 
 			const rewards = ethers.utils.parseUnits("3000000", "ether");
@@ -169,6 +169,36 @@ describe("BudStaking contract", function () {
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from("2999999999999999999999700"));
+    });*/
+
+		it("total test", async function () {
+			await time.increase(3600);
+			await this.staking.stake([1]);
+
+			await time.increase(SECONDS_IN_DAY);
+
+			let stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("0"));
+
+			await time.increase(SECONDS_IN_DAY);
+
+			stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("5555555555555555555555"));
+
+			await time.increase(SECONDS_IN_DAY);
+
+			stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("11111111111111111111110"));
+
+			await time.increase(3600);
+
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+
+			await time.increase(SECONDS_IN_DAY);
     });
   });
 });

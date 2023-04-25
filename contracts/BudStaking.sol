@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Buddieverse Staking Smart Contract
@@ -293,7 +293,9 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 tokenAmount = stakedTokenAmount();
         if (tokenAmount <= 0) return (_rewards, _lastUpdatedTime);
 
+        uint256[] memory tokenDurations = new uint256[](len);
         _updatedTime = _lastUpdatedTime;
+
         for (uint256 period = 1; period <= 4; ++period) {
             uint256 periodStartTime = _startTime + (period - 1) * SECONDS_IN_PERIOD;
             if (block.timestamp <= periodStartTime) {
@@ -303,11 +305,13 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
             endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY) * SECONDS_IN_DAY;
             
-            if (endTime > _updatedTime) {                
-                uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+            if (endTime > _updatedTime) {
+                uint256 numOfTokens = 0;                
 
-                for (uint256 i; i < len; ++i) {
+                // Calculate number of tokens which ara able to get rewards in this duration.
+                for (uint256 i; i < len; ++i) {                    
                     Staker memory staker = stakers[stakersArray[i]];
+                    tokenDurations[i] = 0;
                     
                     for (uint256 n; n < staker.stakedTokens.length; ++n) {
                         uint256 elapsed = (endTime - staker.stakedTokens[n].timestamp) / SECONDS_IN_DAY;
@@ -315,7 +319,19 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                             elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
                         }
                         if (elapsed > 0) {
-                            _rewards[i] += elapsed * dailyRewards;
+                            numOfTokens += 1;
+                            tokenDurations[i] += elapsed;
+                        }
+                    }
+                }
+
+                if (numOfTokens > 0) {
+                    uint256 dailyRewards = (periodRewards(period) / 180) / numOfTokens;
+
+                    // Update rewards
+                    for (uint256 i; i < len; ++i) {
+                        if (tokenDurations[i] > 0) {
+                            _rewards[i] += tokenDurations[i] * dailyRewards;
                         }
                     }
                 }

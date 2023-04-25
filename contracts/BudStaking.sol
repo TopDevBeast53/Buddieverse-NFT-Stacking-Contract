@@ -113,7 +113,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         nftCollection = _nftCollection;
         rewardsToken = _rewardsToken;
         _startTime = block.timestamp;
-        _lastUpdatedTime = block.timestamp;
+        _lastUpdatedTime = 0;
         _setOperator(msg.sender, true);
     }
 
@@ -297,20 +297,27 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             }
 
             uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
-            uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
+            endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY);
+            
+            if (endTime > _updatedTime) {                
+                uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;
 
-            for (uint256 i; i < len; ++i) {
-                Staker memory staker = stakers[stakersArray[i]];
-                
-                for (uint256 n; n < staker.stakedTokens.length; ++n) {
-                    if (endTime > _updatedTime) {
-                        uint256 elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
-                        _rewards[i] += elapsed * dailyRewards;
+                for (uint256 i; i < len; ++i) {
+                    Staker memory staker = stakers[stakersArray[i]];
+                    
+                    for (uint256 n; n < staker.stakedTokens.length; ++n) {
+                        uint256 elapsed = (endTime - staker.stakedTokens[n].timestamp) / SECONDS_IN_DAY;
+                        if (_updatedTime > 0) {
+                            elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
+                        }
+                        if (elapsed > 0) {
+                            _rewards[i] += elapsed * dailyRewards;
+                        }
                     }
                 }
-            }
 
-            _updatedTime = endTime;
+                _updatedTime = endTime;
+            }
         }
     }
 

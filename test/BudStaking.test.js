@@ -220,6 +220,17 @@ describe("BudStaking contract", function () {
 			stakeInfo = await this.staking.userStakeInfo(this.alice.address);
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from("2777777777777777777777"));
+
+			await time.increase(SECONDS_IN_DAY * 10);
+
+			// Rwards should be divided.
+			stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("47222222222222222222212"));
+
+			stakeInfo = await this.staking.userStakeInfo(this.alice.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(stakeInfo[1]).to.eq(BigNumber.from("30555555555555555555547"));
     });
   });
 });

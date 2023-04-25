@@ -311,16 +311,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                 // Calculate number of tokens which ara able to get rewards in this duration.
                 for (uint256 i; i < len; ++i) {                    
                     Staker memory staker = stakers[stakersArray[i]];
-                    durations[i] = 0;
                     
-                    for (uint256 n; n < staker.stakedTokens.length; ++n) {
-                        uint256 elapsed = (endTime - staker.stakedTokens[n].timestamp) / SECONDS_IN_DAY;
-                        if (_updatedTime > 0) {
-                            elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
-                        }
+                    durations[i] = 0;
+                    if (_updatedTime > 0) {
+                        uint256 elapsed = (endTime - _updatedTime) / SECONDS_IN_DAY;
                         if (elapsed > 0) {
-                            numOfTokens += 1;
-                            durations[i] += elapsed;
+                            numOfTokens += staker.stakedTokens.length;
+                            durations[i] = elapsed * staker.stakedTokens.length;
+                        }
+                    } else {
+                        for (uint256 n; n < staker.stakedTokens.length; ++n) {
+                            uint256 elapsed = (endTime - staker.stakedTokens[n].timestamp) / SECONDS_IN_DAY;
+                            if (elapsed > 0) {
+                                numOfTokens += 1;
+                                durations[i] += elapsed;
+                            }
                         }
                     }
                 }

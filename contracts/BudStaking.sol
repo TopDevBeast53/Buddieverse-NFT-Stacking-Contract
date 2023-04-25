@@ -297,7 +297,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             }
 
             uint256 endTime = Math.min(block.timestamp, periodStartTime + SECONDS_IN_PERIOD);
-            endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY);
+            endTime = _startTime + ((endTime - _startTime) / SECONDS_IN_DAY) * SECONDS_IN_DAY;
             
             if (endTime > _updatedTime) {                
                 uint256 dailyRewards = (periodRewards(period) / 180) / tokenAmount;

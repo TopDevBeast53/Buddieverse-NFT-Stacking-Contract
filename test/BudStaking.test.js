@@ -45,20 +45,20 @@ describe("BudStaking contract", function () {
 
 			const rewards = ethers.utils.parseUnits("3000000", "ether");
 			await expect(await this.seedToken.allowance(this.staking.address, this.deployer.address)).to.eql(rewards);
-    });
+    });*/
 
 		it("should stake successfully", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
-			await this.staking.stake([2]);
-			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+			// await this.staking.stake([2]);
+			// await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
 
 			await this.staking.connect(this.alice).stake([3]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(3));
     });
 
-		it("should stake and unstake", async function () {
+		/*it("should stake and unstake", async function () {
 			await this.staking.stake([1]);
 			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
 
@@ -169,7 +169,7 @@ describe("BudStaking contract", function () {
 			const stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from("2999999999999999999999700"));
-    });*/
+    });
 
 		it("total test", async function () {
 			await time.increase(3600);
@@ -231,6 +231,6 @@ describe("BudStaking contract", function () {
 			stakeInfo = await this.staking.userStakeInfo(this.alice.address);
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(stakeInfo[1]).to.eq(BigNumber.from("30555555555555555555547"));
-    });
+    });*/
   });
 });

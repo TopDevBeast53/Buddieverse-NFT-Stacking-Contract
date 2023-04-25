@@ -308,10 +308,12 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
                     Staker memory staker = stakers[stakersArray[i]];
                     for (uint256 n; n < staker.stakedTokens.length; ++n) {
                         uint256 stakedTime = Math.max(_updatedTime, staker.stakedTokens[n].timestamp);
-                        uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
-                        if (elapsed > 0) {
-                            numOfTokens += 1;
-                            durations[i] += elapsed;
+                        if (endTime > stakedTime) {
+                            uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
+                            if (elapsed > 0) {
+                                numOfTokens += 1;
+                                durations[i] += elapsed;
+                            }
                         }
                     }
                 }
@@ -348,12 +350,13 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
                 for (uint256 i; i < len; ++i) {
                     Staker memory staker = stakers[stakersArray[i]];
-                    
                     for (uint256 n; n < staker.stakedTokens.length; ++n) {
                         uint256 stakedTime = Math.max(_updatedTime, staker.stakedTokens[n].timestamp);
-                        uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
-                        if (elapsed > 0) {
-                            _rewards[i] += elapsed * dailyRewards;
+                        if (endTime > stakedTime) {
+                            uint256 elapsed = (endTime - stakedTime) / SECONDS_IN_DAY;
+                            if (elapsed > 0) {
+                                _rewards[i] += elapsed * dailyRewards;
+                            }
                         }
                     }
                 }

@@ -126,6 +126,10 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         return _startTime;
     }
 
+    function lastUpdatedTime() external view returns (uint256) {
+        return _lastUpdatedTime;
+    }
+
     /**
      * @notice Function used to stake ERC721 Tokens.
      * @param _tokenIds - The array of Token Ids to stake.

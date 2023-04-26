@@ -244,5 +244,37 @@ describe("BudStaking contract", function () {
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(formatEther(stakeInfo[1])).to.eql("30555.5555");
     });
+
+		it("total test", async function () {
+			await time.increase(3600);
+			await this.staking.stake([1]);
+
+			await time.increase(SECONDS_IN_DAY);
+
+			// Stake new token
+			await this.staking.connect(this.alice).stake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(2));
+
+			await time.increase(SECONDS_IN_DAY);
+
+			let stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(formatEther(stakeInfo[1])).to.eql("5555.5555");
+
+			await time.increase(SECONDS_IN_DAY * 3);
+
+			stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(formatEther(stakeInfo[1])).to.eql("13888.8888");
+
+			await this.staking.connect(this.alice).unstake([3]);
+			await expect(await this.staking.stakedTokenAmount()).to.eql(BigNumber.from(1));
+
+			await time.increase(SECONDS_IN_DAY);
+
+			stakeInfo = stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
+			await expect(stakeInfo[0].length).to.eq(1);
+			await expect(formatEther(stakeInfo[1])).to.eql("19444.4444");
+    });
   });
 });

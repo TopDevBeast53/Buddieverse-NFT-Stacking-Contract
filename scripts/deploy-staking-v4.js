@@ -24,7 +24,7 @@ async function main() {
   const collection = CONTRACT_NFT_COLLECTION;
   console.log("NFTCollection address:", collection);
 
-  const unitPrice = ethers.utils.parseUnits("0.01", "ether");
+  const unitPrice = ethers.utils.parseUnits("0.1", "ether");
 
   const SeedToken = await ethers.getContractFactory("SeedToken");
   const seedToken = await SeedToken.deploy(deployer.address, deployer.address, unitPrice);

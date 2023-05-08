@@ -5,7 +5,8 @@
   "scripts": {
     "build": "hardhat compile",
     "localhost": "npx hardhat node",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "test-seed": "hardhat test ./test/SeedToken.test.js"
   },
   "repository": {
     "type": "git",

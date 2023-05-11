@@ -82,6 +82,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         /**
          * @dev 
          */
+        uint256 matchedOrderId;
+        /**
+         * @dev 
+         */
         uint256[] orders;
     }
 
@@ -157,7 +161,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
             productId: productId,
             owner: msg.sender,
             amount: amount, 
-            price: price, 
+            price: price,
+            matchedOrderId: 0,
             timestamp: block.timestamp,
             orders: new uint256[](0)
         }));
@@ -187,18 +192,29 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         buyer.orders.push(orderId);
     }
 
-    function sellProduct(uint256 productId, uint256 orderId) payable external whenNotPaused {
-        Product memory product = getProduct(productId);
+    function sellProduct(uint256 productId, uint256 orderId) external whenNotPaused {
+        Product storage product = _getProduct(productId);
+        require(product.matchedOrderId == 0, "This product is already matched");
+
         Order memory order = getOrder(orderId);
+        product.matchedOrderId = order.orderId;
+    }
+
+    function buyProduct(uint256 productId, uint256 orderId) payable external whenNotPaused {
+        Product storage product = _getProduct(productId);
+        require(product.matchedOrderId == orderId, "You can not buy not matched order");
+        
+        Order memory order = getOrder(orderId);
+        require(order.owner == msg.sender, "You can not buy because you don't own the order");
 
         uint256 amount = product.amount;
         require(seedsToken.balanceOf(address(this)) >= amount, "Can't add product you don't own!");
         
-        // Send SEEDS token to buyer
-        seedsToken.transfer(msg.sender, amount);
-
         // Send ether to seller from buyer
         payable(product.owner).transfer(msg.value);
+
+        // Send SEEDS token to buyer
+        seedsToken.transfer(msg.sender, amount);
 
         // Remove the product and orders from array
         for (uint256 i; i < product.orders.length; ++i) {

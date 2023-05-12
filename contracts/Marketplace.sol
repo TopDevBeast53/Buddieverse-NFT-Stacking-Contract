@@ -164,10 +164,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.orderType == OrderType.SELL, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
 
-        uint256 totalPrice = quantity * order.price / TOKEN_DECIMALS;
+        uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
         require(totalPrice == msg.value, "Insufficient cost");
 
-        require(seedsToken.balanceOf(address(this)) >= quantity, "Product is out of stock.");
+        require(seedsToken.balanceOf(address(this)) >= quantity, "Insufficient token");
 
         // Send ETH from buyer to seller
         payable(order.owner).transfer(msg.value);
@@ -178,12 +178,12 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.quantity -= quantity;
     }
 
-    function sellTokenByOrderId(bytes32 orderId, uint256 quantity) payable external whenNotPaused {
+    function sellTokenByOrderId(bytes32 orderId, uint256 quantity) external whenNotPaused {
         Order storage order = getOrder(orderId);
         require(order.orderType == OrderType.BUY, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
 
-        uint256 totalPrice = quantity * order.price;
+        uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
         require(address(this).balance >= totalPrice, "Insufficient cost");
 
         require(address(this).balance >= quantity, "Product is out of stock.");

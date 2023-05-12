@@ -81,5 +81,20 @@ describe("Marketplace contract", function () {
 			await expect(order.orderType).to.eq(1);
 			await expect(formatEther(order.price)).to.eql("0.1");
     });
+
+		it("buyTokenByOrderId", async function () {
+			const quantity = ethers.utils.parseUnits("10", "ether");
+			const price = ethers.utils.parseUnits("0.1", "ether");
+			await this.marketplace.addSellOrder(quantity, price, 0);
+			
+			const orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(1);
+
+			const order = orders[0];
+			const totalPrice = ethers.utils.parseUnits("1", "ether");
+			await this.marketplace.connect(this.alice).buyTokenByOrderId(order.id, quantity, { value: totalPrice });
+
+			await expect(await this.seedToken.balanceOf(this.alice.address)).to.eq(quantity);
+    });
   });
 });

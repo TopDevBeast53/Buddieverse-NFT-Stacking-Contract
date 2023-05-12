@@ -186,13 +186,13 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
         require(address(this).balance >= totalPrice, "Insufficient cost");
 
-        require(address(this).balance >= quantity, "Product is out of stock.");
+        require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
 
         // Send ETH from contract to seller.
         payable(msg.sender).transfer(totalPrice);
 
-        // Send SEEDS token to buyer (order owner).
-        seedsToken.transfer(order.owner, quantity);
+        // Send SEEDS token to buyer (order owner) from seller (msg.sender).
+        seedsToken.transferFrom(msg.sender, order.owner, quantity);
 
         order.quantity -= quantity;
     }

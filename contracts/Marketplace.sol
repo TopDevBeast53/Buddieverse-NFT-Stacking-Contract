@@ -35,15 +35,16 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
     uint256 constant MAX_REWARDS = 3000000 * 10 ** 18;
 
+    enum OrderType {
+        SELL,
+        BUY
+    }
+
     struct Order {
         /**
          * @dev 
          */
-        uint256 orderId;
-        /**
-         * @dev 
-         */
-        uint256 productId;
+        bytes32 id;
         /**
          * @dev 
          */
@@ -55,38 +56,19 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         /**
          * @dev 
          */
-        uint256 timestamp;
-    }
-
-    struct Product {
+        uint256 quantity;
         /**
          * @dev 
          */
-        uint256 productId;
+        OrderType orderType;
         /**
          * @dev 
          */
-        address owner;
+        uint256 createdAt;
         /**
          * @dev 
          */
-        uint256 amount;
-        /**
-         * @dev 
-         */
-        uint256 price;
-        /**
-         * @dev 
-         */
-        uint256 timestamp;
-        /**
-         * @dev 
-         */
-        uint256 matchedOrderId;
-        /**
-         * @dev 
-         */
-        uint256[] orders;
+        uint256 expiration;
     }
 
     /**
@@ -96,11 +78,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         /**
          * @dev 
          */
-        uint256[] products;
-        /**
-         * @dev 
-         */
-        uint256[] orders;
+        bytes32[] orders;
     }
 
     /**
@@ -110,19 +88,11 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev 
      */
-    Product[] public productArray;
-    /**
-     * @dev 
-     */
-    mapping(uint256 => uint256) public productIdToArrayIndex;
-    /**
-     * @dev 
-     */
     Order[] public orderArray;
     /**
      * @dev 
      */
-    mapping(uint256 => uint256) public orderIdToArrayIndex;
+    mapping(bytes32 => uint256) public orderIdToArrayIndex;
     
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
@@ -137,130 +107,96 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.approve(operator, MAX_REWARDS);
     }
 
-    function nextProductId() public view returns (uint256) {
-        return productArray.length + 1;
+    function nextOrderId(OrderType orderType) public view returns (bytes32) {
+        return keccak256(abi.encode(orderArray.length + 1, orderType));
     }
 
-    function nextOrderId() public view returns (uint256) {
-        return orderArray.length + 1;
+    function addOrder(uint256 quantity, uint256 price, uint256 expiration, OrderType orderType) private {
+        bytes32 orderId = nextOrderId(orderType);
+        orderArray.push(Order({
+            id: orderId,
+            owner: msg.sender,
+            quantity: quantity, 
+            price: price,
+            orderType: orderType,
+            createdAt: block.timestamp,
+            expiration: expiration
+        }));
+
+        User storage user = users[msg.sender];
+        user.orders.push(orderId);
+
+        orderIdToArrayIndex[orderId] = orderArray.length - 1;
     }
 
     /**
      * @notice Function used to stake ERC721 Tokens.
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
-    function addProduct(uint256 amount, uint256 price) external whenNotPaused {
-        require(amount > 0, "Invalid amount");
-        require(price > 0, "Invalid price");
+    function addBuyOrder(uint256 quantity, uint256 price, uint256 expiration) payable external whenNotPaused {
+        require(quantity > 0, "Invalid quantity");
+        require(price > 0, "Invalid unit price");
 
-        require(seedsToken.balanceOf(msg.sender) >= amount, "Can't register tokens you don't own!");
-        seedsToken.transferFrom(msg.sender, address(this), amount);
+        uint256 totalPrice = quantity * price;
+        require(msg.value == totalPrice, "Insufficient cost");
 
-        uint256 productId = nextProductId();
-        productArray.push(Product({
-            productId: productId,
-            owner: msg.sender,
-            amount: amount, 
-            price: price,
-            matchedOrderId: 0,
-            timestamp: block.timestamp,
-            orders: new uint256[](0)
-        }));
-
-        User storage seller = users[msg.sender];
-        seller.products.push(productId);
+        addOrder(quantity, price, expiration, OrderType.BUY);
     }
 
-    function makeOrder(uint256 productId, uint256 price) external whenNotPaused {
-        require(price > 0, "Invalid price");
+    /**
+     * @notice Function used to stake ERC721 Tokens.
+     * @dev Each Token Id must be approved for transfer by the user before calling this function.
+     */
+    function addSellOrder(uint256 quantity, uint256 price, uint256 expiration) external whenNotPaused {
+        require(quantity > 0, "Invalid quantity");
+        require(price > 0, "Invalid unit price");
 
-        Product storage product = _getProduct(productId);
-        require(price >= product.price, "Order price must more than product");
+        require(seedsToken.balanceOf(msg.sender) >= quantity, "Can't add order you don't own!");
+        seedsToken.transferFrom(msg.sender, address(this), quantity);
 
-        uint256 orderId = nextOrderId();
-        orderArray.push(Order({
-            orderId: orderId,
-            productId: productId,
-            owner: msg.sender,
-            price: price,
-            timestamp: block.timestamp
-        }));
-
-        product.orders.push(orderId);
-
-        User storage buyer = users[msg.sender];
-        buyer.orders.push(orderId);
+        addOrder(quantity, price, expiration, OrderType.SELL);
     }
 
-    function sellProduct(uint256 productId, uint256 orderId) external whenNotPaused {
-        Product storage product = _getProduct(productId);
-        require(product.matchedOrderId == 0, "This product is already matched");
+    function buyTokenByOrderId(bytes32 orderId, uint256 quantity) payable external whenNotPaused {
+        Order storage order = getOrder(orderId);
+        require(order.orderType == OrderType.SELL, "Invalid order type");
+        require(order.quantity >= quantity, "Insufficient quantity");
 
-        Order memory order = getOrder(orderId);
-        product.matchedOrderId = order.orderId;
-    }
+        uint256 totalPrice = quantity * order.price;
+        require(totalPrice == msg.value, "Insufficient cost");
 
-    function buyProduct(uint256 productId, uint256 orderId) payable external whenNotPaused {
-        Product storage product = _getProduct(productId);
-        require(product.matchedOrderId == orderId, "You can not buy not matched order");
-        
-        Order memory order = getOrder(orderId);
-        require(order.owner == msg.sender, "You can not buy because you don't own the order");
+        require(seedsToken.balanceOf(address(this)) >= quantity, "Product is out of stock.");
 
-        uint256 amount = product.amount;
-        require(seedsToken.balanceOf(address(this)) >= amount, "Can't add product you don't own!");
-        
-        // Send ether to seller from buyer
-        payable(product.owner).transfer(msg.value);
+        // Send ETH from buyer to seller
+        payable(order.owner).transfer(msg.value);
 
         // Send SEEDS token to buyer
-        seedsToken.transfer(msg.sender, amount);
+        seedsToken.transfer(msg.sender, quantity);
 
-        // Remove the product and orders from array
-        for (uint256 i; i < product.orders.length; ++i) {
-            removeOrder(product.orders[i]);
-        }
-        removeProduct(productId);
-
-        // Update products in the seller.
-        User storage seller = users[product.owner];
-        for (uint256 i; i < seller.products.length; ++i) {
-            if (seller.products[i] == productId) {
-                uint256 lastIndex = seller.products.length - 1;
-                if (i != lastIndex) {
-                    seller.products[i] = seller.products[lastIndex];
-                }
-                seller.products.pop();
-                break;
-            }
-        }
-
-        User storage buyer = users[order.owner];
-        for (uint256 i; i < buyer.orders.length; ++i) {
-            Order memory item = getOrder(buyer.orders[i]);
-            if (item.productId == productId || buyer.orders[i] == orderId) {
-                uint256 lastIndex = buyer.orders.length - 1;
-                if (i != lastIndex) {
-                    buyer.orders[i] = buyer.orders[lastIndex];
-                }
-                buyer.orders.pop();
-            }
-        }
+        order.quantity -= quantity;
     }
 
-    function getProducts() public view returns (Product[] memory) {
-        User storage user = users[msg.sender];
+    function sellTokenByOrderId(bytes32 orderId, uint256 quantity) payable external whenNotPaused {
+        Order storage order = getOrder(orderId);
+        require(order.orderType == OrderType.BUY, "Invalid order type");
+        require(order.quantity >= quantity, "Insufficient quantity");
 
-        Product[] memory products = new Product[](user.products.length);
-        for (uint256 i; i < user.products.length; ++i) {
-            uint256 index = productIdToArrayIndex[user.products[i]];
-            products[i] = productArray[index];
-        }
-        return products;
+        uint256 totalPrice = quantity * order.price;
+        require(address(this).balance >= totalPrice, "Insufficient cost");
+
+        require(address(this).balance >= quantity, "Product is out of stock.");
+
+        // Send ETH from contract to seller.
+        payable(msg.sender).transfer(totalPrice);
+
+        // Send SEEDS token to buyer (order owner).
+        seedsToken.transfer(order.owner, quantity);
+
+        order.quantity -= quantity;
     }
 
-    function getOrders() public view returns (Order[] memory) {
-        User storage user = users[msg.sender];
+    function getOrders(address owner) public view returns (Order[] memory) {
+        User storage user = users[owner];
 
         Order[] memory orders = new Order[](user.orders.length);
         for (uint256 i; i < user.orders.length; ++i) {
@@ -270,44 +206,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return orders;
     }
 
-    function _getProduct(uint256 productId) internal view returns (Product storage) {
-        uint256 index = productIdToArrayIndex[productId];
-        require(index >= 0, "Invalid Product ID");
-        return productArray[index];
-    }
-
-    function getProduct(uint256 productId) public view returns (Product memory) {
-        uint256 index = productIdToArrayIndex[productId];
-        require(index >= 0, "Invalid Product ID");
-        return productArray[index];
-    }
-
-    function getOrder(uint256 orderId) public view returns (Order memory) {
+    function getOrder(bytes32 orderId) internal view returns (Order storage) {
         uint256 index = orderIdToArrayIndex[orderId];
         require(index >= 0, "Invalid Order ID");
         return orderArray[index];
-    }
-
-    function removeProduct(uint256 productId) private {
-        uint256 index = productIdToArrayIndex[productId];
-        uint256 lastProductIndex = productArray.length - 1;
-        if (index != lastProductIndex) {
-            productArray[index] = productArray[lastProductIndex];
-            productIdToArrayIndex[productArray[index].productId] = index;
-        }
-        productArray.pop();
-        delete productIdToArrayIndex[productId];
-    }
-
-    function removeOrder(uint256 orderId) private {
-        uint256 index = orderIdToArrayIndex[orderId];
-        uint256 lastOrderIndex = orderArray.length - 1;
-        if (index != lastOrderIndex) {
-            orderArray[index] = orderArray[lastOrderIndex];
-            orderIdToArrayIndex[orderArray[index].orderId] = index;
-        }
-        orderArray.pop();
-        delete orderIdToArrayIndex[orderId];
     }
 
     /**

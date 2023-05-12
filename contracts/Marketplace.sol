@@ -35,7 +35,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
     uint256 private TOKEN_DECIMALS = 10 ** 18;
 
-    uint256 constant MAX_REWARDS = 10000000 * 10 ** 18;
+    uint256 constant MAX_ALLOWANCE = 10000000 * 10 ** 18;
 
     enum OrderType {
         BUY,
@@ -106,7 +106,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     }
 
     function _setOperator(address operator) private {
-        seedsToken.approve(operator, MAX_REWARDS);
+        seedsToken.approve(operator, MAX_ALLOWANCE);
     }
 
     function getOrderArray() public view returns (Order[] memory) {

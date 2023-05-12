@@ -33,11 +33,13 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
      */
     IERC20 public immutable seedsToken;
 
+    uint256 private TOKEN_DECIMALS = 10 ** 18;
+
     uint256 constant MAX_REWARDS = 3000000 * 10 ** 18;
 
     enum OrderType {
-        SELL,
-        BUY
+        BUY,
+        SELL
     }
 
     struct Order {
@@ -137,7 +139,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
-        uint256 totalPrice = quantity * price;
+        uint256 totalPrice = quantity * price / TOKEN_DECIMALS;
         require(msg.value == totalPrice, "Insufficient cost");
 
         addOrder(quantity, price, expiration, OrderType.BUY);
@@ -151,7 +153,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
-        require(seedsToken.balanceOf(msg.sender) >= quantity, "Can't add order you don't own!");
+        require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
         seedsToken.transferFrom(msg.sender, address(this), quantity);
 
         addOrder(quantity, price, expiration, OrderType.SELL);
@@ -162,7 +164,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.orderType == OrderType.SELL, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
 
-        uint256 totalPrice = quantity * order.price;
+        uint256 totalPrice = quantity * order.price / TOKEN_DECIMALS;
         require(totalPrice == msg.value, "Insufficient cost");
 
         require(seedsToken.balanceOf(address(this)) >= quantity, "Product is out of stock.");

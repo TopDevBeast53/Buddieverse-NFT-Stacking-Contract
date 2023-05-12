@@ -109,6 +109,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.approve(operator, MAX_REWARDS);
     }
 
+    function getOrderArray() public view returns (Order[] memory) {
+        return orderArray;
+    }
+
     function nextOrderId(OrderType orderType) public view returns (bytes32) {
         return keccak256(abi.encode(orderArray.length + 1, orderType));
     }
@@ -139,7 +143,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
-        uint256 totalPrice = quantity * price / TOKEN_DECIMALS;
+        uint256 totalPrice = (quantity * price) / TOKEN_DECIMALS;
         require(msg.value == totalPrice, "Insufficient cost");
 
         addOrder(quantity, price, expiration, OrderType.BUY);

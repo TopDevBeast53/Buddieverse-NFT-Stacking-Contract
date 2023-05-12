@@ -1,3 +1,7 @@
+const SeedToken = require("../artifacts/contracts/SeedToken.sol/SeedToken.json");
+
+export const CONTRACT_SEEDS_ADDRESS = '0x27A419d11d622481ed8D7e620B0940497C93bc38';
+
 async function main() {
   // This is just a convenience check
   if (network.name === "hardhat") {
@@ -17,9 +21,12 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const SeedToken = await ethers.getContractFactory("SeedToken");
+  /*const SeedToken = await ethers.getContractFactory("SeedToken");
   const seedToken = await SeedToken.deploy(deployer.address, deployer.address);
   await seedToken.deployed();
+  console.log("SeedToken address:", seedToken.address);*/
+
+  const seedToken = new ethers.Contract(CONTRACT_SEED_TOKEN, SeedToken.abi, deployer);
   console.log("SeedToken address:", seedToken.address);
 
   const Marketplace = await ethers.getContractFactory("Marketplace");
@@ -28,7 +35,7 @@ async function main() {
   console.log("Marketplace address:", marketplace.address);
 
   console.log("Mint Seed token to address");
-  const ethersToWei = ethers.utils.parseUnits("10000", "ether");
+  const ethersToWei = ethers.utils.parseUnits("1000", "ether");
   await seedToken.mint(deployer.address, ethersToWei);
 
   const balance = await seedToken.balanceOf(deployer.address);
@@ -42,4 +49,4 @@ main()
     process.exit(1);
   });
 
-//npx hardhat run scripts/deploy-staking-v3.js --network exosama
+//npx hardhat run scripts/deploy-market.js --network exosama

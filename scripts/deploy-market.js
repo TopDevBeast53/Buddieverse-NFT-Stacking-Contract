@@ -27,11 +27,11 @@ async function main() {
   await marketplace.deployed();
   console.log("Marketplace address:", marketplace.address);
 
-  console.log("Mint Seed token to address", staking.address);
-  const ethersToWei = ethers.utils.parseUnits("3000000", "ether");
-  await seedToken.mint(staking.address, ethersToWei);
+  console.log("Mint Seed token to address");
+  const ethersToWei = ethers.utils.parseUnits("10000", "ether");
+  await seedToken.mint(deployer.address, ethersToWei);
 
-  const balance = await seedToken.balanceOf(staking.address);
+  const balance = await seedToken.balanceOf(deployer.address);
   console.log("Balance of seed token", balance);
 }
 

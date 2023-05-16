@@ -1,5 +1,4 @@
 const SeedToken = require("../artifacts/contracts/SeedToken.sol/SeedToken.json");
-
 const CONTRACT_SEED_TOKEN = '0x27A419d11d622481ed8D7e620B0940497C93bc38';
 
 async function main() {

@@ -194,7 +194,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(price > 0, "Invalid unit price");
 
         Order storage order = getOrder(orderId);
-        require(order.owner == msg.sender, "Invalid order type");
+        require(order.owner == msg.sender, "Not owner");
         require(order.orderType == OrderType.BUY, "Invalid order type");
 
         uint256 oldPrice = Math.mulDiv(order.quantity, order.price, TOKEN_DECIMALS);
@@ -226,7 +226,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(price > 0, "Invalid unit price");
 
         Order storage order = getOrder(orderId);
-        require(order.owner == msg.sender, "Invalid order type");
+        require(order.owner == msg.sender, "Not owner");
         require(order.orderType == OrderType.SELL, "Invalid order type");
 
         if (order.quantity > quantity) {

@@ -8,18 +8,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+
 //import "hardhat/console.sol";
 
 /**
  * @title Buddieverse Staking Smart Contract
  *
  *
- * @notice This contract uses a simple principle to alow users to stake ERC721 Tokens 
+ * @notice This contract uses a simple principle to alow users to stake ERC721 Tokens
  * and earn ERC20 Reward Tokens distributed by the owner of the contract.
- * Each time a user stakes or withdraws a new Token Id, the contract will store the time of the transaction 
- * and the amount of ERC20 Reward Tokens that the user has earned up to that point (based on the amount of time 
- * that has passed since the last transaction, the amount of Tokens staked and the amount of ERC20 Reward Tokens 
- * distributed per hour so that the amount of ERC20 Reward Tokens earned by the user is always distributed accounting 
+ * Each time a user stakes or withdraws a new Token Id, the contract will store the time of the transaction
+ * and the amount of ERC20 Reward Tokens that the user has earned up to that point (based on the amount of time
+ * that has passed since the last transaction, the amount of Tokens staked and the amount of ERC20 Reward Tokens
+ * distributed per hour so that the amount of ERC20 Reward Tokens earned by the user is always distributed accounting
  * for how many ERC721 Tokens he has staked at that particular moment.
  * The user can claim the ERC20 Reward Tokens at any time by calling the claimRewards function.
  *
@@ -44,41 +45,41 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
     struct Order {
         /**
-         * @dev 
+         * @dev
          */
         bytes32 id;
         /**
-         * @dev 
+         * @dev
          */
         address owner;
         /**
-         * @dev 
+         * @dev
          */
         uint256 price;
         /**
-         * @dev 
+         * @dev
          */
         uint256 quantity;
         /**
-         * @dev 
+         * @dev
          */
         OrderType orderType;
         /**
-         * @dev 
+         * @dev
          */
         uint256 createdAt;
         /**
-         * @dev 
+         * @dev
          */
         uint256 expiration;
     }
 
     /**
-     * @dev Struct that 
+     * @dev Struct that
      */
     struct User {
         /**
-         * @dev 
+         * @dev
          */
         bytes32[] orders;
     }
@@ -88,14 +89,14 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
      */
     mapping(address => User) users;
     /**
-     * @dev 
+     * @dev
      */
     Order[] public orderArray;
     /**
-     * @dev 
+     * @dev
      */
     mapping(bytes32 => uint256) public orderIdToArrayIndex;
-    
+
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
      * @param _seedsToken - The address of the ERC20 Reward Token.
@@ -117,17 +118,24 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return keccak256(abi.encode(orderArray.length + 1, orderType));
     }
 
-    function addOrder(uint256 quantity, uint256 price, uint256 expiration, OrderType orderType) private {
+    function addOrder(
+        uint256 quantity,
+        uint256 price,
+        uint256 expiration,
+        OrderType orderType
+    ) private {
         bytes32 orderId = nextOrderId(orderType);
-        orderArray.push(Order({
-            id: orderId,
-            owner: msg.sender,
-            quantity: quantity, 
-            price: price,
-            orderType: orderType,
-            createdAt: block.timestamp,
-            expiration: expiration
-        }));
+        orderArray.push(
+            Order({
+                id: orderId,
+                owner: msg.sender,
+                quantity: quantity,
+                price: price,
+                orderType: orderType,
+                createdAt: block.timestamp,
+                expiration: expiration
+            })
+        );
 
         User storage user = users[msg.sender];
         user.orders.push(orderId);
@@ -139,7 +147,11 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
      * @notice Function used to stake ERC721 Tokens.
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
-    function addBuyOrder(uint256 quantity, uint256 price, uint256 expiration) payable external whenNotPaused {
+    function addBuyOrder(
+        uint256 quantity,
+        uint256 price,
+        uint256 expiration
+    ) external payable whenNotPaused {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
@@ -153,19 +165,31 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
      * @notice Function used to stake ERC721 Tokens.
      * @dev Each Token Id must be approved for transfer by the user before calling this function.
      */
-    function addSellOrder(uint256 quantity, uint256 price, uint256 expiration) external whenNotPaused {
+    function addSellOrder(
+        uint256 quantity,
+        uint256 price,
+        uint256 expiration
+    ) external whenNotPaused {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
-        require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
-        
+        require(
+            seedsToken.balanceOf(msg.sender) >= quantity,
+            "Insufficient token"
+        );
+
         // Send token to buyer
         seedsToken.transferFrom(msg.sender, address(this), quantity);
 
         addOrder(quantity, price, expiration, OrderType.SELL);
     }
 
-    function updateBuyOffer(bytes32 orderId, uint256 quantity, uint256 price, uint256 expiration) external payable whenNotPaused {
+    function updateBuyOffer(
+        bytes32 orderId,
+        uint256 quantity,
+        uint256 price,
+        uint256 expiration
+    ) external payable whenNotPaused {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
@@ -192,7 +216,12 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.expiration = expiration;
     }
 
-    function updateSellOffer(bytes32 orderId, uint256 quantity, uint256 price, uint256 expiration) external payable whenNotPaused {
+    function updateSellOffer(
+        bytes32 orderId,
+        uint256 quantity,
+        uint256 price,
+        uint256 expiration
+    ) external payable whenNotPaused {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
@@ -202,15 +231,20 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
         if (order.quantity > quantity) {
             uint256 diff = order.quantity - quantity;
-            require(seedsToken.balanceOf(address(this)) >= diff, "Insufficient token");
+            require(
+                seedsToken.balanceOf(address(this)) >= diff,
+                "Insufficient token"
+            );
 
             // Send token to sender
             seedsToken.transfer(msg.sender, diff);
-
         } else if (quantity > order.quantity) {
             uint256 diff = quantity - order.quantity;
-            require(seedsToken.balanceOf(msg.sender) >= diff, "Insufficient token");
-            
+            require(
+                seedsToken.balanceOf(msg.sender) >= diff,
+                "Insufficient token"
+            );
+
             // Receive token from sender
             seedsToken.transferFrom(msg.sender, address(this), diff);
         }
@@ -220,27 +254,36 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.expiration = expiration;
     }
 
-    function removeOffer(bytes32 orderId) payable external whenNotPaused {
+    function removeOffer(bytes32 orderId) external payable whenNotPaused {
         Order storage order = getOrder(orderId);
         require(order.owner == msg.sender, "Invalid order type");
         require(order.quantity >= 0, "Empty offer");
 
         if (order.orderType == OrderType.BUY) {
-            uint256 totalPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
-            require(address(this).balance >= totalPrice, "Insufficient balance");
+            uint256 totalPrice = (order.quantity * order.price) /
+                TOKEN_DECIMALS;
+            require(
+                address(this).balance >= totalPrice,
+                "Insufficient balance"
+            );
 
             // Send ETH from contract to owner.
             payable(msg.sender).transfer(totalPrice);
-        
-        }else {
-            require(seedsToken.balanceOf(address(this)) >= order.quantity, "Insufficient token");
+        } else {
+            require(
+                seedsToken.balanceOf(address(this)) >= order.quantity,
+                "Insufficient token"
+            );
 
             // Send SEEDS token.
             seedsToken.transfer(msg.sender, order.quantity);
         }
     }
 
-    function buyTokenByOrderId(bytes32 orderId, uint256 quantity) payable external whenNotPaused {
+    function buyTokenByOrderId(
+        bytes32 orderId,
+        uint256 quantity
+    ) external payable whenNotPaused {
         Order storage order = getOrder(orderId);
         require(order.orderType == OrderType.SELL, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
@@ -248,7 +291,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
         require(totalPrice == msg.value, "Insufficient cost");
 
-        require(seedsToken.balanceOf(address(this)) >= quantity, "Insufficient token");
+        require(
+            seedsToken.balanceOf(address(this)) >= quantity,
+            "Insufficient token"
+        );
 
         // Send ETH from buyer to seller
         payable(order.owner).transfer(msg.value);
@@ -259,7 +305,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.quantity -= quantity;
     }
 
-    function sellTokenByOrderId(bytes32 orderId, uint256 quantity) external whenNotPaused {
+    function sellTokenByOrderId(
+        bytes32 orderId,
+        uint256 quantity
+    ) external whenNotPaused {
         Order storage order = getOrder(orderId);
         require(order.orderType == OrderType.BUY, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
@@ -267,7 +316,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
         require(address(this).balance >= totalPrice, "Insufficient balance");
 
-        require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
+        require(
+            seedsToken.balanceOf(msg.sender) >= quantity,
+            "Insufficient token"
+        );
 
         // Send ETH from contract to seller.
         payable(msg.sender).transfer(totalPrice);

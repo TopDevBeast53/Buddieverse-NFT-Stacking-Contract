@@ -277,6 +277,14 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
             // Send SEEDS token.
             seedsToken.transfer(msg.sender, order.quantity);
         }
+
+        uint256 index = orderIdToArrayIndex[orderId];
+        uint256 lastOrderIndex = orderArray.length - 1;
+        if (index != lastOrderIndex) {
+            orderArray[index] = orderArray[lastOrderIndex];
+            orderIdToArrayIndex[orderArray[index].id] = index;
+        }
+        orderArray.pop();
     }
 
     function buyTokenByOrderId(

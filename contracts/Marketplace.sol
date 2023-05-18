@@ -221,7 +221,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 quantity,
         uint256 price,
         uint256 expiration
-    ) external payable whenNotPaused {
+    ) external whenNotPaused {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 

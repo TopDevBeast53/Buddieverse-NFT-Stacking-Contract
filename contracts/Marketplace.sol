@@ -155,7 +155,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(quantity > 0, "Invalid quantity");
         require(price > 0, "Invalid unit price");
 
-        uint256 totalPrice = (quantity * price) / TOKEN_DECIMALS;
+        uint256 totalPrice = Math.mulDiv(quantity, price, TOKEN_DECIMALS);
         require(msg.value == totalPrice, "Insufficient cost");
 
         addOrder(quantity, price, expiration, OrderType.BUY);
@@ -197,8 +197,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.owner == msg.sender, "Invalid order type");
         require(order.orderType == OrderType.BUY, "Invalid order type");
 
-        uint256 oldPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
-        uint256 newPrice = (quantity * price) / TOKEN_DECIMALS;
+        uint256 oldPrice = Math.mulDiv(order.quantity, order.price, TOKEN_DECIMALS);
+        uint256 newPrice = Math.mulDiv(quantity, price, TOKEN_DECIMALS);
 
         if (newPrice > oldPrice) {
             uint256 diff = newPrice - oldPrice;
@@ -260,8 +260,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.quantity >= 0, "Empty offer");
 
         if (order.orderType == OrderType.BUY) {
-            uint256 totalPrice = (order.quantity * order.price) /
-                TOKEN_DECIMALS;
+            uint256 totalPrice = Math.mulDiv(order.quantity, order.price, TOKEN_DECIMALS);
             require(
                 address(this).balance >= totalPrice,
                 "Insufficient balance"
@@ -288,7 +287,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.orderType == OrderType.SELL, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
 
-        uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
+        uint256 totalPrice = Math.mulDiv(quantity, order.price, TOKEN_DECIMALS);
         require(totalPrice == msg.value, "Insufficient cost");
 
         require(
@@ -313,7 +312,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.orderType == OrderType.BUY, "Invalid order type");
         require(order.quantity >= quantity, "Insufficient quantity");
 
-        uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
+        uint256 totalPrice = Math.mulDiv(quantity, order.price, TOKEN_DECIMALS);
         require(address(this).balance >= totalPrice, "Insufficient balance");
 
         require(

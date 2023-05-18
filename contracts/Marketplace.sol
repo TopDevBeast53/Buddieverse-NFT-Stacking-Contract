@@ -158,9 +158,86 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(price > 0, "Invalid unit price");
 
         require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
+        
+        // Send token to buyer
         seedsToken.transferFrom(msg.sender, address(this), quantity);
 
         addOrder(quantity, price, expiration, OrderType.SELL);
+    }
+
+    function updateBuyOffer(bytes32 orderId, uint256 quantity, uint256 price, uint256 expiration) external payable whenNotPaused {
+        require(quantity > 0, "Invalid quantity");
+        require(price > 0, "Invalid unit price");
+
+        Order storage order = getOrder(orderId);
+        require(order.owner == msg.sender, "Invalid order type");
+        require(order.orderType == OrderType.BUY, "Invalid order type");
+
+        uint256 oldPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
+        uint256 newPrice = (quantity * price) / TOKEN_DECIMALS;
+
+        if (newPrice > oldPrice) {
+            uint256 diff = newPrice - oldPrice;
+            require(msg.value == diff, "Invalid cost");
+        } else if (oldPrice > newPrice) {
+            uint256 diff = oldPrice - newPrice;
+            require(address(this).balance >= diff, "Insufficient balance");
+
+            // Send ETH from contract to sender.
+            payable(msg.sender).transfer(diff);
+        }
+
+        order.quantity = quantity;
+        order.price = price;
+        order.expiration = expiration;
+    }
+
+    function updateSellOffer(bytes32 orderId, uint256 quantity, uint256 price, uint256 expiration) external payable whenNotPaused {
+        require(quantity > 0, "Invalid quantity");
+        require(price > 0, "Invalid unit price");
+
+        Order storage order = getOrder(orderId);
+        require(order.owner == msg.sender, "Invalid order type");
+        require(order.orderType == OrderType.SELL, "Invalid order type");
+
+        if (order.quantity > quantity) {
+            uint256 diff = order.quantity - quantity;
+            require(seedsToken.balanceOf(address(this)) >= diff, "Insufficient token");
+
+            // Send token to sender
+            seedsToken.transfer(msg.sender, diff);
+
+        } else if (quantity > order.quantity) {
+            uint256 diff = quantity - order.quantity;
+            require(seedsToken.balanceOf(msg.sender) >= diff, "Insufficient token");
+            
+            // Receive token from sender
+            seedsToken.transferFrom(msg.sender, address(this), diff);
+        }
+
+        order.quantity = quantity;
+        order.price = price;
+        order.expiration = expiration;
+    }
+
+    function removeOffer(bytes32 orderId) payable external whenNotPaused {
+        Order storage order = getOrder(orderId);
+        require(order.owner == msg.sender, "Invalid order type");
+        require(order.quantity >= 0, "Empty offer");
+
+        if (order.orderType == OrderType.BUY) {
+            uint256 totalPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
+            require(address(this).balance >= totalPrice, "Insufficient balance");
+
+            // Send ETH from contract to owner.
+            payable(msg.sender).transfer(totalPrice);
+        
+        }else {
+            require(seedsToken.balanceOf(address(this)) >= order.quantity, "Insufficient token");
+
+            // Send SEEDS token.
+            seedsToken.transfer(msg.sender, order.quantity);
+        }
     }
 
     function buyTokenByOrderId(bytes32 orderId, uint256 quantity) payable external whenNotPaused {
@@ -199,26 +276,6 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.transferFrom(msg.sender, order.owner, quantity);
 
         order.quantity -= quantity;
-    }
-
-    function removeOffer(bytes32 orderId) payable external whenNotPaused {
-        Order storage order = getOrder(orderId);
-        require(order.owner == msg.sender, "Invalid order type");
-        require(order.quantity >= 0, "Empty offer");
-
-        if (order.orderType == OrderType.BUY) {
-            uint256 totalPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
-            require(address(this).balance >= totalPrice, "Insufficient balance");
-
-            // Send ETH from contract to owner.
-            payable(msg.sender).transfer(totalPrice);
-        
-        }else {
-            require(seedsToken.balanceOf(address(this)) >= order.quantity, "Insufficient token");
-
-            // Send SEEDS token.
-            seedsToken.transfer(msg.sender, order.quantity);
-        }
     }
 
     function getOrders(address owner) public view returns (Order[] memory) {

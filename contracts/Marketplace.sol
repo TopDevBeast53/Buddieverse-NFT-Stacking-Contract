@@ -188,7 +188,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.quantity >= quantity, "Insufficient quantity");
 
         uint256 totalPrice = (quantity * order.price) / TOKEN_DECIMALS;
-        require(address(this).balance >= totalPrice, "Insufficient cost");
+        require(address(this).balance >= totalPrice, "Insufficient balance");
 
         require(seedsToken.balanceOf(msg.sender) >= quantity, "Insufficient token");
 
@@ -199,6 +199,26 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.transferFrom(msg.sender, order.owner, quantity);
 
         order.quantity -= quantity;
+    }
+
+    function removeOffer(bytes32 orderId) payable external whenNotPaused {
+        Order storage order = getOrder(orderId);
+        require(order.owner == msg.sender, "Invalid order type");
+        require(order.quantity >= 0, "Empty offer");
+
+        if (order.orderType == OrderType.BUY) {
+            uint256 totalPrice = (order.quantity * order.price) / TOKEN_DECIMALS;
+            require(address(this).balance >= totalPrice, "Insufficient balance");
+
+            // Send ETH from contract to owner.
+            payable(msg.sender).transfer(totalPrice);
+        
+        }else {
+            require(seedsToken.balanceOf(address(this)) >= order.quantity, "Insufficient token");
+
+            // Send SEEDS token.
+            seedsToken.transfer(msg.sender, order.quantity);
+        }
     }
 
     function getOrders(address owner) public view returns (Order[] memory) {

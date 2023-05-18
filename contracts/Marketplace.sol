@@ -184,7 +184,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         addOrder(quantity, price, expiration, OrderType.SELL);
     }
 
-    function updateBuyOffer(
+    function updateBuyOrder(
         bytes32 orderId,
         uint256 quantity,
         uint256 price,
@@ -216,7 +216,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.expiration = expiration;
     }
 
-    function updateSellOffer(
+    function updateSellOrder(
         bytes32 orderId,
         uint256 quantity,
         uint256 price,
@@ -254,7 +254,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         order.expiration = expiration;
     }
 
-    function removeOffer(bytes32 orderId) external payable whenNotPaused {
+    function removeOrder(bytes32 orderId) external payable whenNotPaused {
         Order storage order = getOrder(orderId);
         require(order.owner == msg.sender, "Invalid order type");
         require(order.quantity >= 0, "Empty offer");

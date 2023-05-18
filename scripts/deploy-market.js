@@ -33,7 +33,7 @@ async function main() {
   await marketplace.deployed();
   console.log("Marketplace address:", marketplace.address);
 
-  console.log("Mint Seed token to address");
+  // console.log("Mint Seed token to address");
   // const ethersToWei = ethers.utils.parseUnits("1000", "ether");
   // await seedToken.mint(deployer.address, ethersToWei);
 

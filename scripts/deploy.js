@@ -46,9 +46,6 @@ async function main() {
   const marketplace = await Marketplace.deploy(seedToken.address);
   await marketplace.deployed();
   console.log("Marketplace address:", marketplace.address);
-
-  // await collection.mint(deployer.address, 1);
-	// await collection.mint(deployer.address, 2);
 }
 
 main()

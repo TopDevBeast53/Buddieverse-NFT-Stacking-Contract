@@ -47,8 +47,13 @@ async function main() {
   console.log("Set approval for deployer", staking.address);
   await collection.setApprovalForAll(staking.address, true);
 
-  await collection.mint(deployer.address, 1);
-	await collection.mint(deployer.address, 2);
+  const Marketplace = await ethers.getContractFactory("Marketplace");
+  const marketplace = await Marketplace.deploy(seedToken.address);
+  await marketplace.deployed();
+  console.log("Marketplace address:", marketplace.address);
+
+  // await collection.mint(deployer.address, 1);
+	// await collection.mint(deployer.address, 2);
 }
 
 main()

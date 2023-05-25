@@ -1,0 +1,8 @@
+Deploying the contracts with the account: 0xDFE055245aB0b67fB0B5AE3EA28CD1fee40299df
+Account balance: 19900680391443973792
+NFTCollection address: 0xbaf909886c0a0cc195fd36ea24f21f93abc23c2c
+SeedToken address: 0xe78D317c5db782aCF8F100e8A67E2c77daC3e270
+Staking contract address: 0xABd266B810f559c0858d56378b52730F0C53101c
+Mint Seed token to address 0xABd266B810f559c0858d56378b52730F0C53101c
+Balance of seed token BigNumber { value: "0" }
+Marketplace address: 0x445c715d0698c26Df81454258b1316900A7955EC

@@ -31,7 +31,7 @@ async function main() {
   console.log("SeedToken address:", seedToken.address);
 
   const Staking = await ethers.getContractFactory("BudStaking");
-  const staking = await Staking.deploy(collection.address, seedToken.address);
+  const staking = await Staking.deploy(collection, seedToken.address);
 	await staking.deployed();
   console.log("Staking contract address:", staking.address);
 
@@ -54,3 +54,5 @@ main()
     console.error(error);
     process.exit(1);
   });
+
+//npx hardhat run scripts/deploy.js --network exosama

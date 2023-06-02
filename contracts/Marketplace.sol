@@ -128,7 +128,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 expiration,
         OrderType orderType
     ) private {
-        orderId = nextOrderId(msg.sender, orderType, lastOrderId);
+        bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderId);
         orderArray.push(
             Order({
                 id: orderId,

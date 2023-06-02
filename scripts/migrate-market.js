@@ -34,13 +34,13 @@ async function main() {
   // await marketplace_old.pause();
   // console.log('Marketplace is paused');
 
-  /*const Marketplace = await ethers.getContractFactory("Marketplace");
+  const Marketplace = await ethers.getContractFactory("Marketplace");
   const marketplace = await Marketplace.deploy(seedToken.address);
   await marketplace.deployed();
-  console.log("Marketplace address:", marketplace.address);*/
+  console.log("New Marketplace address:", marketplace.address);
 
-  const marketplace = new ethers.Contract(CONTRACT_MARKETPLACE_NEW, MARKETPLACE.abi, deployer);
-  console.log("Marketplace address:", marketplace.address);
+  // const marketplace = new ethers.Contract(CONTRACT_MARKETPLACE_NEW, MARKETPLACE.abi, deployer);
+  // console.log("Marketplace address:", marketplace.address);
 
   const balance = await marketplace_old.provider.getBalance(marketplace_old.address);
   console.log('balance', balance);

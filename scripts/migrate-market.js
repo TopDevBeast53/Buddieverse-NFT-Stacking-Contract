@@ -2,9 +2,7 @@ const SEEDTOKEN = require("../artifacts/contracts/SeedToken.sol/SeedToken.json")
 const MARKETPLACE = require("../artifacts/contracts/Marketplace.sol/Marketplace.json");
 
 const CONTRACT_SEEDS_ADDRESS = '0xe78D317c5db782aCF8F100e8A67E2c77daC3e270';
-const CONTRACT_MARKETPLACE = '0x445c715d0698c26Df81454258b1316900A7955EC';
-
-const CONTRACT_MARKETPLACE_NEW = '0x95967bA4Fc6d6D4aD1Eea45eD5EC43128f0332A1';
+const CONTRACT_MARKETPLACE_OLD = '0x445c715d0698c26Df81454258b1316900A7955EC';
 
 async function main() {
   // This is just a convenience check
@@ -28,7 +26,7 @@ async function main() {
   const seedToken = new ethers.Contract(CONTRACT_SEEDS_ADDRESS, SEEDTOKEN.abi, deployer);
   console.log("SeedToken address:", seedToken.address);
 
-  const marketplace_old = new ethers.Contract(CONTRACT_MARKETPLACE, MARKETPLACE.abi, deployer);
+  const marketplace_old = new ethers.Contract(CONTRACT_MARKETPLACE_OLD, MARKETPLACE.abi, deployer);
   console.log("Old Marketplace address:", marketplace_old.address);
 
   // await marketplace_old.pause();

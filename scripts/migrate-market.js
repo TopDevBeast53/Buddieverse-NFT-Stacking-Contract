@@ -53,11 +53,19 @@ async function main() {
 
   if (balance > 0) {
     console.log('Send Ether to new marketplace contract.')
-    await marketplace_old.signer.sendTransaction({
+    await deployer.sendTransaction({
       to: marketplace.address,
       value: balance,
     });
   }
+
+  const tokenBalance = await seedToken.balanceOf(marketplace_old.address);
+  if (tokenBalance > 0) {
+    console.log('Send tokens to new marketplace contract.')
+    await seedToken.transferFrom(marketplace_old.address, marketplace.address, tokenBalance);
+  }
+
+  console.log('Successfully migrated');
 }
 
 main()

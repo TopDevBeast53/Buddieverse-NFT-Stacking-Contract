@@ -9,3 +9,9 @@ SeedToken address: 0x8889eEF8C13C46D6f7782F07607F81B69BD293B0
 Staking contract address: 0x71A26224239bd0e7C16aA614B6d49FbFFD3De793
 Mint Seed token to address 0x71A26224239bd0e7C16aA614B6d49FbFFD3De793
 Update start time
+
+Deploying the contracts with the account: 0xDFE055245aB0b67fB0B5AE3EA28CD1fee40299df
+Account balance: 30975408376131257952
+SeedToken address: 0x8889eEF8C13C46D6f7782F07607F81B69BD293B0
+Marketplace address: 0xc929D2Bd424beD66502245B5D6ea7c7738421c84
+

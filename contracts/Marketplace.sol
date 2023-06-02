@@ -290,6 +290,18 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
             orderIdToArrayIndex[orderArray[index].id] = index;
         }
         orderArray.pop();
+
+        // Remove order from users order list.
+        for (uint256 i; i < user.orders.length; ++i) {
+            if (user.orders[i] == orderId) {
+                uint256 lastIndex = user.orders.length - 1;
+                if (i != lastIndex) {
+                    user.orders[i] = user.orders[lastIndex];
+                }
+                user.orders.pop();
+                break;
+            }
+        }
     }
 
     function buyTokenByOrderId(

@@ -50,6 +50,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     
     uint256 constant REWARDS_PERIOD_3 = 600000 * 10 ** 18;
 
+    struct MigrateToken {
+        /**
+         * @dev Token Id staked by the user.
+         */
+        uint256 tokenId;
+        /**
+         * @dev Timestamp staked
+         */
+        uint256 timestamp;
+        /**
+         * @dev Timestamp staked
+         */
+        address owner;
+    }
+
     struct StakedToken {
         /**
          * @dev Token Id staked by the user.
@@ -128,6 +143,26 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     function lastUpdatedTime() external view returns (uint256) {
         return _lastUpdatedTime;
+    }
+
+    function setStartTime(uint256 startTime) external onlyOwner {
+        _startTime = startTime;
+    }
+
+    function addStakedTokens(MigrateToken[] calldata tokens) external onlyOwner {
+        for (uint256 i; i < tokens.length; i++) {
+            Staker storage staker = stakers[token.owner];
+
+            if (staker.stakedTokens.length == 0) {
+                stakersArray.push(token.owner);
+                stakerToArrayIndex[token.owner] = stakersArray.length - 1;
+            }
+
+            uint256 tokenId = token.tokenId;
+            staker.stakedTokens.push(StakedToken(tokenId, token.timestamp));
+            tokenIdToArrayIndex[tokenId] = staker.stakedTokens.length - 1;
+            stakerAddress[tokenId] = token.owner;
+        }
     }
 
     /**

@@ -161,5 +161,23 @@ describe("Marketplace contract", function () {
 
 			expect(orders.find(i => i.id === removeId) == null);
     });
+
+		it("migrate", async function () {
+			const quantity = ethers.utils.parseUnits("10", "ether");
+			const price = ethers.utils.parseUnits("0.4", "ether");
+			const cost = ethers.utils.parseUnits("4", "ether");
+			await this.marketplace.addBuyOrder(quantity, price, 0, { value: cost });
+			
+			let orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(1);
+
+			let balance = await this.marketplace.provider.getBalance(this.marketplace.address);
+			expect(balance).to.eq(cost);
+
+			await this.marketplace.migrate(this.deployer.address);
+
+			balance = await this.marketplace.provider.getBalance(this.marketplace.address);
+			expect(balance).to.eq(0);
+    });
   });
 });

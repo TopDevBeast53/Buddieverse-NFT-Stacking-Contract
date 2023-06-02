@@ -131,10 +131,6 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.approve(operator, MAX_ALLOWANCE);
     }
 
-    function getOrderArray() public view returns (Order[] memory) {
-        return orderArray;
-    }
-
     function nextOrderId(
         address owner,
         OrderType orderType,

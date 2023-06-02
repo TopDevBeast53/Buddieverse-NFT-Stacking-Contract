@@ -29,6 +29,16 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     /**
+     * @dev Emitted when `tokenId` token is staked from `from`.
+     */
+    event Stake(address indexed from, uint256 indexed tokenId);
+
+    /**
+     * @dev Emitted when `tokenId` token is unstaked from `from`.
+     */
+    event Unstake(address indexed from, uint256 indexed tokenId);
+
+    /**
      * @dev The ERC20 Reward Token that will be distributed to stakers.
      */
     IERC20 public immutable rewardsToken;
@@ -189,6 +199,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             staker.stakedTokens.push(StakedToken(tokenId, block.timestamp));
             tokenIdToArrayIndex[tokenId] = staker.stakedTokens.length - 1;
             stakerAddress[tokenId] = msg.sender;
+        
+            emit Stake(msg.sender, tokenId);
         }
     }
 
@@ -223,6 +235,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             delete stakerAddress[tokenId];
 
             nftCollection.transferFrom(address(this), msg.sender, tokenId);
+
+            emit Unstake(msg.sender, tokenId);
         }
 
         if (staker.stakedTokens.length == 0) {

@@ -116,7 +116,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev
      */
-    uint256 lastOrderIndex = 0;
+    uint256 uniqueOrderIndex = 0;
 
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
@@ -152,8 +152,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 expiration,
         OrderType orderType
     ) private {
-        lastOrderIndex++;
-        bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderIndex);
+        uniqueOrderIndex++;
+        bytes32 orderId = nextOrderId(msg.sender, orderType, uniqueOrderIndex);
 
         Order memory order = Order({
             id: orderId,

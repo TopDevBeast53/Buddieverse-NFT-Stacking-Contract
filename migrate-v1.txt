@@ -1,0 +1,11 @@
+Deploying the contracts with the account: 0xDFE055245aB0b67fB0B5AE3EA28CD1fee40299df
+Account balance: 30986440428822636086
+NFTCollection address: 0xbaf909886c0a0cc195fd36ea24f21f93abc23c2c
+Old staking address: 0xABd266B810f559c0858d56378b52730F0C53101c
+migrateTokens 319
+tokenIdList 319
+SeedToken address: 0xD1bC24e88a92d11cdf6075aEDf5A3f6c220Bbf71
+Staking contract address: 0x36696a5F07Df842c57431a953CcA128c4b55FE6E
+Mint Seed token to address 0x36696a5F07Df842c57431a953CcA128c4b55FE6E
+Add staked tokens to new contract
+ProviderError: HttpProviderError

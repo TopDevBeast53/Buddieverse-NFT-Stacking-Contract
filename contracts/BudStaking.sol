@@ -39,6 +39,11 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
     event Unstake(address indexed from, uint256 indexed tokenId);
 
     /**
+     * @dev Emitted when migrated.
+     */
+    event Migrated(address indexed to, uint256 indexed numberOfTokens);
+
+    /**
      * @dev The ERC20 Reward Token that will be distributed to stakers.
      */
     IERC20 public immutable rewardsToken;
@@ -161,6 +166,23 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
 
     function getStakersLength() public view returns (uint256) {
         return stakersArray.length;
+    }
+
+    function migrate(address to) external onlyOwner {
+        uint256 numberOfTokens = 0;
+
+        for (uint256 i; i < stakersArray.length; i++) {
+            Staker memory staker = stakersArray[i];
+
+            for (uint256 n; n < staker.stakedTokens.length; n++) {
+                uint256 tokenId = staker.stakedTokens[i].tokenId;
+                nftCollection.transferFrom(address(this), to, tokenId);
+
+                numberOfTokens ++;
+            }
+        }
+
+        emit Migrated(to, numberOfTokens);
     }
 
     function addStakedTokens(MigrateToken[] calldata tokens) external onlyOwner {

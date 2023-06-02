@@ -96,6 +96,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
      * @dev
      */
     mapping(bytes32 => uint256) public orderIdToArrayIndex;
+    /**
+     * @dev
+     */
+    uint256 lastOrderIndex = 0;
 
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
@@ -114,8 +118,15 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return orderArray;
     }
 
-    function nextOrderId(OrderType orderType) public view returns (bytes32) {
-        return keccak256(abi.encode(orderArray.length + 1, orderType));
+    function nextOrderId(address owner, OrderType orderType, uint256 uniqueIndex) public view returns (bytes32) {
+        return keccak256(abi.encode(owner, orderType, uniqueIndex));
+    }
+
+    function addOrders(Order[] calldata _orders) external onlyOwner {
+        for (uint256 i; i < _orders.length; i++) {
+            Order memory order = _orders[i];
+            addOrder(order.quantity, order.price, order.expiration, order.orderType);
+        }
     }
 
     function addOrder(
@@ -124,7 +135,9 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 expiration,
         OrderType orderType
     ) private {
-        bytes32 orderId = nextOrderId(orderType);
+        lastOrderIndex++;
+        bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderIndex);
+
         orderArray.push(
             Order({
                 id: orderId,
@@ -256,7 +269,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
     function removeOrder(bytes32 orderId) external payable whenNotPaused {
         Order storage order = getOrder(orderId);
-        require(order.owner == msg.sender, "Invalid order type");
+        require(order.owner == msg.sender, "Not owner");
         require(order.quantity >= 0, "Empty offer");
 
         if (order.orderType == OrderType.BUY) {
@@ -285,6 +298,19 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
             orderIdToArrayIndex[orderArray[index].id] = index;
         }
         orderArray.pop();
+
+        // Remove order from users order list.
+        User storage user = users[msg.sender];
+        for (uint256 i; i < user.orders.length; ++i) {
+            if (user.orders[i] == orderId) {
+                uint256 lastIndex = user.orders.length - 1;
+                if (i != lastIndex) {
+                    user.orders[i] = user.orders[lastIndex];
+                }
+                user.orders.pop();
+                break;
+            }
+        }
     }
 
     function buyTokenByOrderId(

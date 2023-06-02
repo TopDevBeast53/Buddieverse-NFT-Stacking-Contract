@@ -111,5 +111,55 @@ describe("Marketplace contract", function () {
 
 			await expect(await this.seedToken.balanceOf(this.alice.address)).to.eq(quantity);
     });
+
+		it("removeOrder", async function () {
+			const quantity = ethers.utils.parseUnits("10", "ether");
+			const price = ethers.utils.parseUnits("0.4", "ether");
+			const cost = ethers.utils.parseUnits("4", "ether");
+			await this.marketplace.addBuyOrder(quantity, price, 0, { value: cost });
+			
+			const orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(1);
+			
+			const order = orders[0];
+			await this.marketplace.removeOrder(order.id);
+
+			const updated_orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(updated_orders.length).to.eq(0);
+    });
+
+		it("removeOrder2", async function () {
+			const quantity = ethers.utils.parseUnits("10", "ether");
+			const price = ethers.utils.parseUnits("0.4", "ether");
+			const cost = ethers.utils.parseUnits("4", "ether");
+			await this.marketplace.addBuyOrder(quantity, price, 0, { value: cost });
+			
+			let orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(1);
+
+			// add new order.
+			await this.marketplace.addBuyOrder(quantity, price, 0, { value: cost });
+
+			orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(2);
+			expect(orders[0].id != orders[1].id);
+
+			const existId = orders[0].id;
+			const removeId = orders[1].id;
+			await this.marketplace.removeOrder(removeId);
+
+			orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(1);
+
+			expect(orders.find(i => i.id === existId) != null);
+			expect(orders.find(i => i.id === removeId) == null);
+
+			// add new order.
+			await this.marketplace.addBuyOrder(quantity, price, 0, { value: cost });
+			orders = await this.marketplace.getOrders(this.deployer.address);
+			await expect(orders.length).to.eq(2);
+
+			expect(orders.find(i => i.id === removeId) == null);
+    });
   });
 });

@@ -28,6 +28,23 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
  */
 contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
+    
+    /**
+     * @dev Emitted when order is created.
+     */
+    event AddOffer(Order order);
+    /**
+     * @dev Emitted when order is removed.
+     */
+    event RemoveOffer(Order order);
+    /**
+     * @dev mitted when `from` address sell tokens from the `order`
+     */
+    event SellToken(address indexed from, Order order, uint256 quantity);
+    /**
+     * @dev Emitted when `from` address buy tokens from the `order`
+     */
+    event BuyToken(address indexed from, Order order, uint256 quantity);
 
     /**
      * @dev The ERC20 Reward Token that will be distributed to stakers.
@@ -138,22 +155,23 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         lastOrderIndex++;
         bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderIndex);
 
-        orderArray.push(
-            Order({
-                id: orderId,
-                owner: msg.sender,
-                quantity: quantity,
-                price: price,
-                orderType: orderType,
-                createdAt: block.timestamp,
-                expiration: expiration
-            })
-        );
+        Order memory order = Order({
+            id: orderId,
+            owner: msg.sender,
+            quantity: quantity,
+            price: price,
+            orderType: orderType,
+            createdAt: block.timestamp,
+            expiration: expiration
+        });
+        orderArray.push(order);
 
         User storage user = users[msg.sender];
         user.orders.push(orderId);
 
         orderIdToArrayIndex[orderId] = orderArray.length - 1;
+
+        emit AddOffer(order);
     }
 
     /**
@@ -311,6 +329,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
                 break;
             }
         }
+
+        emit RemoveOffer(order);
     }
 
     function buyTokenByOrderId(
@@ -336,6 +356,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.transfer(msg.sender, quantity);
 
         order.quantity -= quantity;
+
+        emit BuyToken(msg.sender, order, quantity);
     }
 
     function sellTokenByOrderId(
@@ -361,6 +383,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.transferFrom(msg.sender, order.owner, quantity);
 
         order.quantity -= quantity;
+
+        emit SellToken(msg.sender, order, quantity);
     }
 
     function getOrders(address owner) public view returns (Order[] memory) {

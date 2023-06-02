@@ -172,7 +172,8 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 numberOfTokens = 0;
 
         for (uint256 i; i < stakersArray.length; i++) {
-            Staker memory staker = stakersArray[i];
+            address owner = stakersArray[i];
+            Staker memory staker = stakers[owner];
 
             for (uint256 n; n < staker.stakedTokens.length; n++) {
                 uint256 tokenId = staker.stakedTokens[i].tokenId;

@@ -135,7 +135,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return orderArray;
     }
 
-    function nextOrderId(address owner, OrderType orderType, uint256 uniqueIndex) public view returns (bytes32) {
+    function nextOrderId(address owner, OrderType orderType, uint256 uniqueIndex) public pure returns (bytes32) {
         return keccak256(abi.encode(owner, orderType, uniqueIndex));
     }
 
@@ -144,6 +144,15 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
             Order memory order = _orders[i];
             addOrder(order.quantity, order.price, order.expiration, order.orderType);
         }
+    }
+
+    function migrate(address payable _to) external payable onlyOwner {
+        require(address(this).balance > 0, "No balance");
+        
+        // Send ETH from contract to new contract.
+        bool sent = _to.send(address(this).balance);
+
+        require(sent, "Failed to send Ether");
     }
 
     function addOrder(

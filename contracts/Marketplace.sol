@@ -28,7 +28,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
  */
 contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
-    
+
     /**
      * @dev Emitted when order is created.
      */
@@ -135,38 +135,50 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return orderArray;
     }
 
-    function nextOrderId(address owner, OrderType orderType, uint256 uniqueIndex) public pure returns (bytes32) {
+    function nextOrderId(
+        address owner,
+        OrderType orderType,
+        uint256 uniqueIndex
+    ) public pure returns (bytes32) {
         return keccak256(abi.encode(owner, orderType, uniqueIndex));
-    }
-
-    function addOrders(Order[] calldata _orders) external onlyOwner {
-        for (uint256 i; i < _orders.length; i++) {
-            Order memory order = _orders[i];
-            addOrder(order.quantity, order.price, order.expiration, order.orderType);
-        }
     }
 
     function migrate(address payable _to) external payable onlyOwner {
         require(address(this).balance > 0, "No balance");
-        
+
         // Send ETH from contract to new contract.
         bool sent = _to.send(address(this).balance);
 
         require(sent, "Failed to send Ether");
     }
 
-    function addOrder(
+    function addOrders(Order[] calldata _orders) external onlyOwner {
+        for (uint256 i; i < _orders.length; i++) {
+            Order memory order = _orders[i];
+
+            _addOrder(
+                order.owner,
+                order.quantity,
+                order.price,
+                order.expiration,
+                order.orderType
+            );
+        }
+    }
+
+    function _addOrder(
+        address owner,
         uint256 quantity,
         uint256 price,
         uint256 expiration,
         OrderType orderType
     ) private {
         uniqueOrderIndex++;
-        bytes32 orderId = nextOrderId(msg.sender, orderType, uniqueOrderIndex);
+        bytes32 orderId = nextOrderId(owner, orderType, uniqueOrderIndex);
 
         Order memory order = Order({
             id: orderId,
-            owner: msg.sender,
+            owner: owner,
             quantity: quantity,
             price: price,
             orderType: orderType,
@@ -175,7 +187,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         });
         orderArray.push(order);
 
-        User storage user = users[msg.sender];
+        User storage user = users[owner];
         user.orders.push(orderId);
 
         orderIdToArrayIndex[orderId] = orderArray.length - 1;
@@ -198,7 +210,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 totalPrice = Math.mulDiv(quantity, price, TOKEN_DECIMALS);
         require(msg.value == totalPrice, "Insufficient cost");
 
-        addOrder(quantity, price, expiration, OrderType.BUY);
+        _addOrder(msg.sender, quantity, price, expiration, OrderType.BUY);
     }
 
     /**
@@ -221,7 +233,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         // Send token to buyer
         seedsToken.transferFrom(msg.sender, address(this), quantity);
 
-        addOrder(quantity, price, expiration, OrderType.SELL);
+        _addOrder(msg.sender, quantity, price, expiration, OrderType.SELL);
     }
 
     function updateBuyOrder(
@@ -237,7 +249,11 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.owner == msg.sender, "Not owner");
         require(order.orderType == OrderType.BUY, "Invalid order type");
 
-        uint256 oldPrice = Math.mulDiv(order.quantity, order.price, TOKEN_DECIMALS);
+        uint256 oldPrice = Math.mulDiv(
+            order.quantity,
+            order.price,
+            TOKEN_DECIMALS
+        );
         uint256 newPrice = Math.mulDiv(quantity, price, TOKEN_DECIMALS);
 
         if (newPrice > oldPrice) {
@@ -300,7 +316,11 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(order.quantity >= 0, "Empty offer");
 
         if (order.orderType == OrderType.BUY) {
-            uint256 totalPrice = Math.mulDiv(order.quantity, order.price, TOKEN_DECIMALS);
+            uint256 totalPrice = Math.mulDiv(
+                order.quantity,
+                order.price,
+                TOKEN_DECIMALS
+            );
             require(
                 address(this).balance >= totalPrice,
                 "Insufficient balance"

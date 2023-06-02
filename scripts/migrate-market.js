@@ -34,17 +34,11 @@ async function main() {
   // await marketplace_old.pause();
   // console.log('Marketplace is paused');
 
-  /*const orders = [];
-  for (let i = 0; i <= 13; i++) {
-    const order = await marketplace_old.orderArray(i);
-    orders.push(order);
-  }
-  console.log('orders', orders);*/
-
   /*const Marketplace = await ethers.getContractFactory("Marketplace");
   const marketplace = await Marketplace.deploy(seedToken.address);
   await marketplace.deployed();
   console.log("Marketplace address:", marketplace.address);*/
+
   const marketplace = new ethers.Contract(CONTRACT_MARKETPLACE_NEW, MARKETPLACE.abi, deployer);
   console.log("Marketplace address:", marketplace.address);
 
@@ -64,6 +58,15 @@ async function main() {
     console.log('Send tokens to new marketplace contract.')
     await seedToken.transferFrom(marketplace_old.address, marketplace.address, tokenBalance);
   }
+
+  // Add order list to new contract.
+  const orders = [];
+  for (let i = 0; i <= 13; i++) {
+    const order = await marketplace_old.orderArray(i);
+    orders.push(order);
+  }
+  console.log('orders', orders.length);
+  await marketplace.addOrders(orders);
 
   console.log('Successfully migrated');
 }

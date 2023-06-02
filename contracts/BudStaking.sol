@@ -175,7 +175,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
             Staker memory staker = stakers[stakersArray[i]];
 
             for (uint256 n; n < staker.stakedTokens.length; n++) {
-                uint256 tokenId = staker.stakedTokens[i].tokenId;
+                uint256 tokenId = staker.stakedTokens[n].tokenId;
                 nftCollection.transferFrom(address(this), to, tokenId);
 
                 numberOfTokens ++;

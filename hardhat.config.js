@@ -34,6 +34,7 @@ module.exports = {
 			url: "https://rpc.exosama.com",
 			accounts: [`0x${process.env.PRIVATE_KEY}`],
 			chainId: 2109,
+			blockGasLimit: 240000000,
 		},
     bsc: {
       url: "https://bsc-testnet.public.blastapi.io",

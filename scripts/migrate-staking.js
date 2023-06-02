@@ -82,7 +82,13 @@ async function main() {
   await staking.setStartTime(startTime);
 
   console.log('Add staked tokens to new contract');
-  await staking.addStakedTokens(migrateTokens);
+  for (let i = 0; i < Math.floor(1 + (migrateTokens.length / 30)); i++) {
+    const startIndex = i * 30;
+    const endIndex = (i + 1) * 30;
+    console.log("Add staked tokens", startIndex, endIndex);
+    const tokens = migrateTokens.slice(startIndex, endIndex);
+    await staking.addStakedTokens(tokens);    
+  }
   console.log('Staking token migrated');
 
   // Send NFTs to new staking contract.

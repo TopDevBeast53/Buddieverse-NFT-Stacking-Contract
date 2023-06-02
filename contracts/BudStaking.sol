@@ -172,8 +172,7 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         uint256 numberOfTokens = 0;
 
         for (uint256 i; i < stakersArray.length; i++) {
-            address owner = stakersArray[i];
-            Staker memory staker = stakers[owner];
+            Staker memory staker = stakers[stakersArray[i]];
 
             for (uint256 n; n < staker.stakedTokens.length; n++) {
                 uint256 tokenId = staker.stakedTokens[i].tokenId;
@@ -184,6 +183,23 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         }
 
         emit Migrated(to, numberOfTokens);
+    }
+
+    function getStakedTokens() public view onlyOwner returns (MigrateToken[] memory) {
+        uint256 numberOfTokens = stakedTokenAmount();
+        MigrateToken[] memory tokens = new MigrateToken[](numberOfTokens);
+
+        for (uint256 i; i < stakersArray.length; ++i) {
+            address owner = stakersArray[i];
+            Staker memory staker = stakers[owner];
+
+            for (uint256 n; n < staker.stakedTokens.length; n++) {
+                StakedToken memory stakedToken = staker.stakedTokens[i];
+                tokens[i] = MigrateToken(stakedToken.tokenId, stakedToken.timestamp, owner);
+            }
+        }
+
+        return tokens;
     }
 
     function addStakedTokens(MigrateToken[] calldata tokens) external onlyOwner {

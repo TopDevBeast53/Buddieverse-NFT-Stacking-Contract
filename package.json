@@ -7,6 +7,7 @@
     "localhost": "npx hardhat node",
     "deploy": "hardhat run scripts/deploy.js --network localhost",
     "test": "hardhat test",
+    "test-staking": "hardhat test ./test/BudStaking.test.js",
     "test-market": "hardhat test ./test/Marketplace.test.js"
   },
   "repository": {

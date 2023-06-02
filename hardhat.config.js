@@ -27,7 +27,8 @@ module.exports = {
 
     },
     hardhat: {
-      chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
+      chainId: 1337, // We set 1337 to make interacting with MetaMask simpler
+			blockGasLimit: 128677692,
     },
 		exosama: {
 			url: "https://rpc.exosama.com",

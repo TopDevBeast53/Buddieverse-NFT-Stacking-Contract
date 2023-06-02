@@ -36,7 +36,7 @@ describe("Marketplace contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		/*it("should revert with insufficient cost", async function () {
+		it("should revert with insufficient cost", async function () {
 			const quantity = ethers.utils.parseUnits("100", "ether");
 			const price = ethers.utils.parseUnits("0.4", "ether");
 			const cost = ethers.utils.parseUnits("10", "ether");
@@ -110,7 +110,7 @@ describe("Marketplace contract", function () {
 			await this.marketplace.sellTokenByOrderId(order.id, quantity);
 
 			await expect(await this.seedToken.balanceOf(this.alice.address)).to.eq(quantity);
-    });*/
+    });
 
 		it("removeOrder", async function () {
 			const quantity = ethers.utils.parseUnits("10", "ether");

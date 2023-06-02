@@ -202,20 +202,21 @@ contract BudStaking is Ownable, ReentrancyGuard, Pausable {
         return tokens;
     }
 
-    function addStakedTokens(MigrateToken[] calldata tokens) external onlyOwner {
-        for (uint256 i; i < tokens.length; i++) {
-            MigrateToken calldata token = tokens[i];
+    function addStakedTokens(MigrateToken[] calldata _tokens) external onlyOwner {
+        for (uint256 i; i < _tokens.length; i++) {
+            MigrateToken calldata token = _tokens[i];
             Staker storage staker = stakers[token.owner];
 
+            address owner = address(token.owner);
             if (staker.stakedTokens.length == 0) {
-                stakersArray.push(token.owner);
-                stakerToArrayIndex[token.owner] = stakersArray.length - 1;
+                stakersArray.push(owner);
+                stakerToArrayIndex[owner] = stakersArray.length - 1;
             }
 
             uint256 tokenId = token.tokenId;
             staker.stakedTokens.push(StakedToken(tokenId, token.timestamp));
             tokenIdToArrayIndex[tokenId] = staker.stakedTokens.length - 1;
-            stakerAddress[tokenId] = token.owner;
+            stakerAddress[tokenId] = owner;
         }
     }
 

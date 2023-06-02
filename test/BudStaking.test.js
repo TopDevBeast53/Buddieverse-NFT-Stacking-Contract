@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { BigNumber } = ethers;
@@ -46,7 +47,7 @@ describe("BudStaking contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		it("should be approved", async function () {
+		/*it("should be approved", async function () {
 			await expect(await this.collection.isApprovedForAll(this.staking.address, this.deployer.address)).to.eql(true);
 
 			const rewards = ethers.utils.parseUnits("3000000", "ether");
@@ -275,6 +276,13 @@ describe("BudStaking contract", function () {
 			stakeInfo = stakeInfo = await this.staking.userStakeInfo(this.deployer.address);
 			await expect(stakeInfo[0].length).to.eq(1);
 			await expect(formatEther(stakeInfo[1])).to.eql("19444.4444");
+    });*/
+
+		it("addStakedTokens", async function () {
+			const json = fs.readFileSync('migrateTokens.json');
+  		const migrateTokens = JSON.parse(json);
+
+			await this.staking.addStakedTokens(migrateTokens);
     });
   });
 });

@@ -1,5 +1,5 @@
 const SeedToken = require("../artifacts/contracts/SeedToken.sol/SeedToken.json");
-const CONTRACT_SEED_TOKEN = '0x27A419d11d622481ed8D7e620B0940497C93bc38';
+const CONTRACT_SEED_TOKEN = '0x8889eEF8C13C46D6f7782F07607F81B69BD293B0';
 
 async function main() {
   // This is just a convenience check
@@ -37,8 +37,8 @@ async function main() {
   // const ethersToWei = ethers.utils.parseUnits("1000", "ether");
   // await seedToken.mint(deployer.address, ethersToWei);
 
-  const balance = await seedToken.balanceOf(deployer.address);
-  console.log("Balance of seed token", balance);
+  // const balance = await seedToken.balanceOf(deployer.address);
+  // console.log("Balance of seed token", balance);
 }
 
 main()

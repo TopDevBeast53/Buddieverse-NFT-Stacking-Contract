@@ -1,0 +1,11 @@
+Deploying the contracts with the account: 0xDFE055245aB0b67fB0B5AE3EA28CD1fee40299df
+Account balance: 30986440428525515360
+NFTCollection address: 0xbaf909886c0a0cc195fd36ea24f21f93abc23c2c
+Old staking address: 0xABd266B810f559c0858d56378b52730F0C53101c  
+startTime BigNumber { value: "1685016155" }
+migrateTokens 319
+tokenIdList 319  
+SeedToken address: 0x8889eEF8C13C46D6f7782F07607F81B69BD293B0
+Staking contract address: 0x71A26224239bd0e7C16aA614B6d49FbFFD3De793
+Mint Seed token to address 0x71A26224239bd0e7C16aA614B6d49FbFFD3De793
+Update start time

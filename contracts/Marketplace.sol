@@ -261,7 +261,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
     function removeOrder(bytes32 orderId) external payable whenNotPaused {
         Order storage order = getOrder(orderId);
-        require(order.owner == msg.sender, "Invalid order type");
+        require(order.owner == msg.sender, "Not owner");
         require(order.quantity >= 0, "Empty offer");
 
         if (order.orderType == OrderType.BUY) {
@@ -292,6 +292,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         orderArray.pop();
 
         // Remove order from users order list.
+        User storage user = users[msg.sender];
         for (uint256 i; i < user.orders.length; ++i) {
             if (user.orders[i] == orderId) {
                 uint256 lastIndex = user.orders.length - 1;

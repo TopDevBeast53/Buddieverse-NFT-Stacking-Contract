@@ -122,7 +122,6 @@ describe("Marketplace contract", function () {
 			await expect(orders.length).to.eq(1);
 			
 			const order = orders[0];
-			console.log('order', order);
 			await this.marketplace.removeOrder(order.id);
 
 			const updated_orders = await this.marketplace.getOrders(this.deployer.address);

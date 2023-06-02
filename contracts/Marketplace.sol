@@ -99,7 +99,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev
      */
-    bytes32 lastOrderId;
+    uint256 lastOrderIndex = 0;
 
     /**
      * @notice Constructor function that initializes the ERC20 and ERC721 interfaces.
@@ -118,8 +118,15 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         return orderArray;
     }
 
-    function nextOrderId(address owner, OrderType orderType, bytes32 lastOrderId) public view returns (bytes32) {
-        return keccak256(abi.encode(owner, orderType, lastOrderId));
+    function nextOrderId(address owner, OrderType orderType, uint256 uniqueIndex) public view returns (bytes32) {
+        return keccak256(abi.encode(owner, orderType, uniqueIndex));
+    }
+
+    function addOrders(Order[] calldata _orders) external onlyOwner {
+        for (uint256 i; i < _orders.length; i++) {
+            Order memory order = _orders[i];
+            addOrder(order.quantity, order.price, order.expiration, order.orderType);
+        }
     }
 
     function addOrder(
@@ -128,7 +135,9 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 expiration,
         OrderType orderType
     ) private {
-        bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderId);
+        lastOrderIndex++;
+        bytes32 orderId = nextOrderId(msg.sender, orderType, lastOrderIndex);
+
         orderArray.push(
             Order({
                 id: orderId,
@@ -145,7 +154,6 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         user.orders.push(orderId);
 
         orderIdToArrayIndex[orderId] = orderArray.length - 1;
-        lastOrderId = orderId;
     }
 
     /**

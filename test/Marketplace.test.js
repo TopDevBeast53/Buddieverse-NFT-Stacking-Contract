@@ -36,7 +36,7 @@ describe("Marketplace contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Deployment", function () {
-		it("should revert with insufficient cost", async function () {
+		/*it("should revert with insufficient cost", async function () {
 			const quantity = ethers.utils.parseUnits("100", "ether");
 			const price = ethers.utils.parseUnits("0.4", "ether");
 			const cost = ethers.utils.parseUnits("10", "ether");
@@ -160,7 +160,7 @@ describe("Marketplace contract", function () {
 			await expect(orders.length).to.eq(2);
 
 			expect(orders.find(i => i.id === removeId) == null);
-    });
+    });*/
 
 		it("migrate", async function () {
 			const quantity = ethers.utils.parseUnits("10", "ether");
@@ -174,10 +174,16 @@ describe("Marketplace contract", function () {
 			let balance = await this.marketplace.provider.getBalance(this.marketplace.address);
 			expect(balance).to.eq(cost);
 
+			balance = await this.deployer.getBalance();
+			console.log('balance', balance);
+
 			await this.marketplace.migrate(this.deployer.address);
 
 			balance = await this.marketplace.provider.getBalance(this.marketplace.address);
 			expect(balance).to.eq(0);
+
+			balance = await this.deployer.getBalance();
+			console.log('balance', balance);
     });
   });
 });

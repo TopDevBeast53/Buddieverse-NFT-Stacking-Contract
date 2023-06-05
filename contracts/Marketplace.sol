@@ -131,6 +131,10 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         seedsToken.approve(operator, MAX_ALLOWANCE);
     }
 
+    function getOrderArray() public view returns (Order[] memory) {
+        return orderArray;
+    }
+
     function nextOrderId(
         address owner,
         OrderType orderType,
@@ -148,7 +152,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
         require(sent, "Failed to send Ether");
     }
 
-    function addOrders(Order[] calldata _orders) external onlyOwner {
+    function addOrders(Order[] calldata _orders) external payable onlyOwner {
         for (uint256 i; i < _orders.length; i++) {
             Order memory order = _orders[i];
 

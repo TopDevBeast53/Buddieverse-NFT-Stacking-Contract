@@ -1,6 +1,0 @@
-Deploying the contracts with the account: 0x7F753F20c8E89B047DAA6F360AD6FAA82c7538b3
-Account balance: 29999451623942626894
-SeedToken address: 0x81056e4A0f11EB7115e6ff9dd71a226377a10540
-Marketplace address: 0x4a62Ab6539fcd14aEf0838df2f1363cD0a736CFb
-Mint Seed token to address
-Balance of seed token BigNumber { value: "0" }

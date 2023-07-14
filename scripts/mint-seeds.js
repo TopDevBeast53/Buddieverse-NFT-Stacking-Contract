@@ -20,25 +20,24 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  /*const SeedToken = await ethers.getContractFactory("SeedToken");
-  const seedToken = await SeedToken.deploy(deployer.address, deployer.address);
-  await seedToken.deployed();
-  console.log("SeedToken address:", seedToken.address);*/
-
   const seedToken = new ethers.Contract(CONTRACT_SEED_TOKEN, SeedToken.abi, deployer);
   console.log("SeedToken address:", seedToken.address);
 
-  const Marketplace = await ethers.getContractFactory("Marketplace");
-  const marketplace = await Marketplace.deploy(seedToken.address);
-  await marketplace.deployed();
-  console.log("Marketplace address:", marketplace.address);
+  const totalSupply = await seedToken.totalSupply();
+  console.log("TotalSupply", totalSupply);
 
-  // console.log("Mint Seed token to address");
-  // const ethersToWei = ethers.utils.parseUnits("1000", "ether");
-  // await seedToken.mint(deployer.address, ethersToWei);
+  const maxSupply = ethers.utils.parseUnits("10000000", "ether");
+  console.log("MaxSupply", maxSupply);
 
-  const balance = await seedToken.balanceOf(deployer.address);
-  console.log("Balance of seed token", balance);
+  const numOfTokens = maxSupply.sub(totalSupply);
+  console.log("NumOfTokens", numOfTokens);
+
+  const to = "0x55A939CCA5e819AB350e14192E0a075a98b4FE31";
+  await seedToken.mint(to, numOfTokens);
+
+  // const mintTokens = ethers.utils.parseUnits("3000000", "ether");
+  // const to = "0x55A939CCA5e819AB350e14192E0a075a98b4FE31";
+  // await seedToken.mint(to, mintTokens);
 }
 
 main()
@@ -48,4 +47,4 @@ main()
     process.exit(1);
   });
 
-//npx hardhat run scripts/deploy-market.js --network exosama
+  //npx hardhat run scripts/mint-seeds.js --network exosama

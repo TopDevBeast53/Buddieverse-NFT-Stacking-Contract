@@ -8,6 +8,21 @@ contract BudItems is ERC1155, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
+    struct TokenBalance {
+        uint256 tokenId;
+        uint256 balance;
+    }
+
+    /**
+     * @dev Array of stakers addresses.
+     */
+    uint256[] public tokenIdArray;
+
+    /**
+     * @dev Mapping of tokenId to their array index.
+     */
+    mapping(uint256 => uint256) public tokenIdMap;
+
     constructor(string memory uri_) ERC1155(uri_) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
@@ -45,9 +60,42 @@ contract BudItems is ERC1155, AccessControl {
         _burnBatch(from, ids, amounts);
     }
 
+    function ownedTokenBalances(address account) public view returns (TokenBalance[] memory) {
+        TokenBalance[] memory tokenBalances = new TokenBalance[](tokenIdArray.length);
+
+        for (uint256 i = 0; i < tokenIdArray.length; ++i) {
+            uint256 tokenId = tokenIdArray[i];
+            tokenBalances[i].tokenId = tokenId;
+            tokenBalances[i].balance = balanceOf(account, tokenId);
+        }
+
+        return tokenBalances;
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC1155, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    function _afterTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override {
+        // Mint token
+        if (from == address(0)) {
+            for (uint256 i = 0; i < ids.length; ++i) {
+                uint256 tokenId = ids[i];
+
+                if (tokenIdMap[tokenId] == 0) {
+                    tokenIdArray.push(tokenId);
+                    tokenIdMap[tokenId] = tokenIdArray.length;
+                }
+            }
+        }
     }
 }

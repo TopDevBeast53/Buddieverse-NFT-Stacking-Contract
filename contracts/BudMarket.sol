@@ -213,7 +213,14 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
         uint256 totalPrice = Math.mulDiv(quantity, price, TOKEN_DECIMALS);
         require(msg.value == totalPrice, "Insufficient cost");
 
-        _addOrder(msg.sender, tokenId, quantity, price, expiration, OrderType.BUY);
+        _addOrder(
+            msg.sender,
+            tokenId,
+            quantity,
+            price,
+            expiration,
+            OrderType.BUY
+        );
     }
 
     /**
@@ -235,9 +242,22 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
         );
 
         // Send token to buyer
-        nftCollection.safeTransferFrom(msg.sender, address(this), tokenId, quantity, "0x00");
+        nftCollection.safeTransferFrom(
+            msg.sender,
+            address(this),
+            tokenId,
+            quantity,
+            "0x00"
+        );
 
-        _addOrder(msg.sender, tokenId, quantity, price, expiration, OrderType.SELL);
+        _addOrder(
+            msg.sender,
+            tokenId,
+            quantity,
+            price,
+            expiration,
+            OrderType.SELL
+        );
     }
 
     function updateBuyOrder(
@@ -297,7 +317,13 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
             );
 
             // Send token to sender
-            nftCollection.safeTransferFrom(address(this), msg.sender, order.tokenId, amount, "Withdraw from sell order");
+            nftCollection.safeTransferFrom(
+                address(this),
+                msg.sender,
+                order.tokenId,
+                amount,
+                "Withdraw from sell order"
+            );
         } else if (quantity > order.quantity) {
             uint256 amount = quantity - order.quantity;
             require(
@@ -306,7 +332,13 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
             );
 
             // Receive token from sender
-            nftCollection.safeTransferFrom(msg.sender, address(this), order.tokenId, amount, "Deposit to sell order");
+            nftCollection.safeTransferFrom(
+                msg.sender,
+                address(this),
+                order.tokenId,
+                amount,
+                "Deposit to sell order"
+            );
         }
 
         order.quantity = quantity;
@@ -334,12 +366,19 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
             payable(msg.sender).transfer(totalPrice);
         } else {
             require(
-                nftCollection.balanceOf(address(this), order.tokenId) >= order.quantity,
+                nftCollection.balanceOf(address(this), order.tokenId) >=
+                    order.quantity,
                 "Insufficient token"
             );
 
             // Send NFT.
-            nftCollection.safeTransferFrom(address(this), msg.sender, order.tokenId, order.quantity, "Remove order");
+            nftCollection.safeTransferFrom(
+                address(this),
+                msg.sender,
+                order.tokenId,
+                order.quantity,
+                "Remove order"
+            );
         }
 
         uint256 index = orderIdToArrayIndex[orderId];
@@ -386,7 +425,13 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
         payable(order.owner).transfer(msg.value);
 
         // Send NFT to buyer
-        nftCollection.safeTransferFrom(address(this), msg.sender, order.tokenId, quantity, "Buy NFT");
+        nftCollection.safeTransferFrom(
+            address(this),
+            msg.sender,
+            order.tokenId,
+            quantity,
+            "Buy NFT"
+        );
 
         order.quantity -= quantity;
 
@@ -413,7 +458,13 @@ contract BudMarket is Ownable, ReentrancyGuard, Pausable {
         payable(msg.sender).transfer(totalPrice);
 
         // Send NFT to buyer (order owner) from seller (msg.sender).
-        nftCollection.safeTransferFrom(msg.sender, order.owner, order.tokenId, quantity, "Sell NFT");
+        nftCollection.safeTransferFrom(
+            msg.sender,
+            order.owner,
+            order.tokenId,
+            quantity,
+            "Sell NFT"
+        );
 
         order.quantity -= quantity;
 
